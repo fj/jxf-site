@@ -1,0 +1,54 @@
+# https://taskfile.dev
+
+version: "3"
+
+vars:
+  PROJECT_ROOT:
+    sh: "echo -n $PWD"
+  SOURCE_PATH: "{{.PROJECT_ROOT}}/site"
+  CONFIG_PATH: "{{.PROJECT_ROOT}}/site"
+  CONTENT_PATH: "{{.PROJECT_ROOT}}/site/content"
+  OUTPUT_PATH: "{{.PROJECT_ROOT}}/out"
+  RESOURCES_PATH: "{{.SOURCE_PATH}}/resources"
+
+tasks:
+  clean:
+    desc: "remove temporary paths"
+    cmds:
+      - rm -rf {{.OUTPUT_PATH}}
+      - rm -rf {{.RESOURCES_PATH}}
+
+  sync-assets:
+    desc: "synchronize assets to and from cloud storage"
+    cmds:
+      - >
+        echo "TODO: not yet implemented"
+
+  serve:
+    desc: "serve website on a local webserver"
+    deps: [clean]
+    cmds:
+      - >
+        hugo serve \
+          --source {{.SOURCE_PATH}} \
+          --destination {{.OUTPUT_PATH}}
+
+  build:
+    desc: "build the webiste and save it"
+    deps: [clean]
+    cmds:
+      - >
+        hugo \
+          --source {{.SOURCE_PATH}} \
+          --destination {{.OUTPUT_PATH}}
+
+  new-post:
+    desc: "add a new post (with ITEM_NAME=...)"
+    preconditions:
+      # Don't proceed if the name is blank.
+      - test -n "$ITEM_NAME"
+    cmds:
+      - mkdir -p {{.CONTENT_PATH}}
+      - >
+        hugo new -k post {{.ITEM_NAME}} \
+          --source {{.PROJECT_ROOT}}/site
