@@ -1,0 +1,7 @@
+# hugo: Ignore output directory.
+out/
+public
+
+# hugo: Ignore generated resources.
+resources/_gen
+site/resources/_gen
