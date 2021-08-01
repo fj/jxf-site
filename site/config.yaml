@@ -1,0 +1,60 @@
+baseURL: "https://jxf-dot-me.netlify.app/"
+languageCode: "en-us"
+title: "{ jxf }"
+
+theme: "hugo-coder"
+
+markup:
+  goldmark:
+    renderer:
+      unsafe: true
+
+params:
+  customizations:
+    styles:
+      - "styles/base.scss"
+    author:
+      name: "John Feminella"
+      tagline: "software engineer · enthusiastic technologist · curiosity advocate"
+      avatar:
+        url: "https://s3.amazonaws.com/assets.jxf.me/images/jf.jpeg"
+  social:
+    - name: github
+      url: https://github.com/fj
+      icon: fab fa-github
+      target: _blank
+      weight: 1
+    - name: twitter
+      url: https://twitter.com/jxxf
+      icon: fab fa-twitter
+      target: _blank
+      weight: 2
+    - name: linkedIn
+      url: https://www.linkedin.com/in/johnxf
+      icon: fab fa-linkedin-in
+      weight: 3
+    - name: stackOverflow
+      url: https://stackoverflow.com/users/75170/john-feminella
+      icon: fab fa-stack-overflow
+      weight: 4
+    - name: connect
+      url: /self.html#connect
+      icon: far fa-envelope
+      weight: 5
+
+languages:
+  en:
+    menu:
+      main:
+        - name: "Blog"
+          weight: "1"
+          url: "posts/"
+        - name: "Work"
+          weight: "2"
+          url: "projects/"
+        - name: "Meta"
+          weight: "3"
+          url: "meta/"
+        - name: "Self"
+          weight: "4"
+          url: "about/"
