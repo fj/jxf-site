@@ -21,25 +21,25 @@ params:
   social:
     - name: github
       url: https://github.com/fj
-      icon: fa fa-github
+      icon: fa fa-3x fa-github
       target: _blank
       weight: 1
     - name: twitter
       url: https://twitter.com/jxxf
-      icon: fa fa-twitter
+      icon: fa fa-3x fa-twitter
       target: _blank
       weight: 2
     - name: linkedIn
       url: https://www.linkedin.com/in/johnxf
-      icon: fa fa-linkedin
+      icon: fa fa-3x fa-linkedin
       weight: 3
     - name: stackOverflow
       url: https://stackoverflow.com/users/75170/john-feminella
-      icon: fa fa-stack-overflow
+      icon: fa fa-3x fa-stack-overflow
       weight: 4
     - name: connect
       url: /self.html#connect
-      icon: fa fa-envelope
+      icon: fa fa-3x fa-envelope
       weight: 5
 
 languages:
