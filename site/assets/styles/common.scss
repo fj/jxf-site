@@ -1,0 +1,31 @@
+@mixin desktop {
+  @media only screen and (max-width: "1365px") {
+    @content;
+  }
+}
+@mixin medium {
+  @media only screen and (max-width: "1279px") {
+    @content;
+  }
+}
+@mixin tablet {
+  @media only screen and (max-width: "1023px") {
+    @content;
+  }
+}
+@mixin mobile {
+  @media only screen and (max-width: "767px") {
+    @content;
+  }
+}
+
+@mixin not-last {
+  &:not(:last-child) {
+    @content;
+  }
+}
+@mixin not-first {
+  &:not(:first-child) {
+    @content;
+  }
+}

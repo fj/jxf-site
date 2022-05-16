@@ -3,5 +3,6 @@ out/
 public
 
 # hugo: Ignore generated resources.
+.hugo_build.lock
 resources/_gen
 site/resources/_gen
