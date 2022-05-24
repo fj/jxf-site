@@ -13,11 +13,11 @@ params:
   customizations:
     styles:
       - "styles/base.scss"
-    author:
-      name: "John Feminella"
-      tagline: "software engineer · enthusiastic technologist · curiosity advocate"
-      avatar:
-        url: "https://s3.amazonaws.com/assets.jxf.me/images/jf.jpeg"
+  author:
+    name: "John Feminella"
+    tagline: "software engineer · enthusiastic technologist · curiosity advocate"
+    avatar:
+      url: "https://s3.amazonaws.com/assets.jxf.me/images/jf.jpeg"
   social:
     - name: github
       url: https://github.com/fj
