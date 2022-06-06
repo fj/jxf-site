@@ -10,6 +10,8 @@ vars:
   CONTENT_PATH: "{{.PROJECT_ROOT}}/site/content"
   OUTPUT_PATH: "{{.PROJECT_ROOT}}/out"
   RESOURCES_PATH: "{{.SOURCE_PATH}}/resources"
+  ASSETS_LOCAL_PATH: "{{.PROJECT_ROOT}}/site/assets"
+  ASSETS_REMOTE_PATH: "s3://assets.jxf.me"
 
 tasks:
   clean:
@@ -18,11 +20,18 @@ tasks:
       - rm -rf {{.OUTPUT_PATH}}
       - rm -rf {{.RESOURCES_PATH}}
 
-  sync-assets:
-    desc: "synchronize assets to and from cloud storage"
+  "sync:up":
+    desc: "sync assets up to cloud"
     cmds:
       - >
         echo "TODO: not yet implemented"
+        echo "aws cli ..."
+  "sync:down":
+    desc: "sync assets down to local environment"
+    cmds:
+      - >
+        echo "TODO: not yet implemented"
+        echo "aws cli ..."
 
   serve:
     desc: "serve website on a local webserver"
