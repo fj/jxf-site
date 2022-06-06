@@ -1,4 +1,5 @@
 @import "./common.scss";
+@import "./author.scss";
 
 // mathjax support
 // .fas::before {
@@ -60,6 +61,7 @@ code.has-jax {
   padding: 0.5rem 0;
   text-decoration: none !important;
   margin-left: -24px;
+
   :hover {
     transition: color 0.2s ease-out;
     color: #3498db;
@@ -136,6 +138,7 @@ code.has-jax {
 
   a {
     text-decoration: none;
+
     p {
       margin: 0;
       padding-bottom: 1rem;
@@ -320,19 +323,24 @@ code.has-jax {
   padding-left: 2rem;
   overflow: auto;
   margin-bottom: 5rem;
+
   span {
     float: left;
     position: relative;
+
     @include not-first {
       margin-left: 3rem;
+
       @include mobile {
         width: 100%;
         margin-left: 0rem;
       }
     }
+
     p {
       margin: 1rem 0rem 1rem;
     }
+
     i {
       padding-right: 1rem;
     }
