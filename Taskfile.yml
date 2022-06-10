@@ -23,21 +23,23 @@ tasks:
   "sync:up":
     desc: "sync assets up to cloud"
     cmds:
-      - >
-        echo "TODO: not yet implemented"
-        echo "aws cli ..."
+      - echo "TODO: not yet implemented"
+      - |-
+        aws s3 sync --dryrun {{.ASSETS_LOCAL_PATH}} {{.ASSETS_REMOTE_PATH}} \
+          --exclude "*" \
+          --include "*.png" \
+          --include "*.jpeg" \ ..."
   "sync:down":
     desc: "sync assets down to local environment"
     cmds:
-      - >
-        echo "TODO: not yet implemented"
-        echo "aws cli ..."
+      - echo 'TODO: not yet implemented'
+      - aws s3 sync --dryrun {{.ASSETS_REMOTE_PATH}} {{.ASSETS_LOCAL_PATH}}
 
   serve:
     desc: "serve website on a local webserver"
     deps: [clean]
     cmds:
-      - >
+      - |-
         hugo serve \
           --source {{.SOURCE_PATH}} \
           --destination {{.OUTPUT_PATH}}
@@ -46,7 +48,7 @@ tasks:
     desc: "build the webiste and save it"
     deps: [clean]
     cmds:
-      - >
+      - |-
         hugo \
           --source {{.SOURCE_PATH}} \
           --destination {{.OUTPUT_PATH}}
@@ -58,6 +60,6 @@ tasks:
       - test -n "$ITEM_NAME"
     cmds:
       - mkdir -p {{.CONTENT_PATH}}
-      - >
+      - |-
         hugo new -k post {{.ITEM_NAME}} \
           --source {{.PROJECT_ROOT}}/site
