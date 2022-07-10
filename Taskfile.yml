@@ -56,7 +56,7 @@ tasks:
           --destination {{.OUTPUT_PATH}}
 
   build:
-    desc: "build the webiste and save it"
+    desc: "build the website and save it"
     deps: [clean]
     cmds:
       - |-
