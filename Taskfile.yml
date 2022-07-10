@@ -10,6 +10,18 @@ vars:
   CONTENT_PATH: "{{.PROJECT_ROOT}}/site/content"
   OUTPUT_PATH: "{{.PROJECT_ROOT}}/out"
   RESOURCES_PATH: "{{.SOURCE_PATH}}/resources"
+  ASSETS_LOCAL_PATH: "{{.PROJECT_ROOT}}/site/assets"
+  ASSETS_REMOTE_PATH: "s3://site-assets.jxf.me"
+
+  # Get AWS secret key if not already defined in environment.
+  AWS_SECRET_ACCESS_KEY:
+    sh: |
+      test -z "$AWS_SECRET_ACCESS_KEY" && aws configure get aws_secret_access_key --profile jxf-site
+
+  # Get AWS access key if not already defined in environment.
+  AWS_ACCESS_KEY_ID:
+    sh: |
+      test -z "$AWS_ACCESS_KEY_ID" && aws configure get aws_access_key_id --profile jxf-site
 
 tasks:
   clean:
@@ -18,26 +30,36 @@ tasks:
       - rm -rf {{.OUTPUT_PATH}}
       - rm -rf {{.RESOURCES_PATH}}
 
-  sync-assets:
-    desc: "synchronize assets to and from cloud storage"
+  "sync:up":
+    desc: "sync assets up to cloud"
     cmds:
-      - >
-        echo "TODO: not yet implemented"
+      - |-
+        export AWS_ACCESS_KEY_ID={{.AWS_ACCESS_KEY_ID}}
+        export AWS_SECRET_ACCESS_KEY={{.AWS_SECRET_ACCESS_KEY}}
+        aws s3 sync --dryrun {{.ASSETS_LOCAL_PATH}} {{.ASSETS_REMOTE_PATH}}
+
+  "sync:down":
+    desc: "sync assets down to local environment"
+    cmds:
+      - |-
+        export AWS_ACCESS_KEY_ID={{.AWS_ACCESS_KEY_ID}}
+        export AWS_SECRET_ACCESS_KEY={{.AWS_SECRET_ACCESS_KEY}}
+        aws s3 sync --dryrun {{.ASSETS_REMOTE_PATH}} {{.ASSETS_LOCAL_PATH}}
 
   serve:
     desc: "serve website on a local webserver"
     deps: [clean]
     cmds:
-      - >
+      - |-
         hugo serve \
           --source {{.SOURCE_PATH}} \
           --destination {{.OUTPUT_PATH}}
 
   build:
-    desc: "build the webiste and save it"
+    desc: "build the website and save it"
     deps: [clean]
     cmds:
-      - >
+      - |-
         hugo \
           --source {{.SOURCE_PATH}} \
           --destination {{.OUTPUT_PATH}}
@@ -49,6 +71,6 @@ tasks:
       - test -n "$ITEM_NAME"
     cmds:
       - mkdir -p {{.CONTENT_PATH}}
-      - >
+      - |-
         hugo new -k post {{.ITEM_NAME}} \
           --source {{.PROJECT_ROOT}}/site
