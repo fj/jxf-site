@@ -1,0 +1,78 @@
+.posts-events {
+  margin-top: 48px;
+  display: flex;
+  width: 100%;
+  gap: 4rem;
+}
+
+.posts {
+  flex: 50%;
+  max-width: 50%;
+  padding: 0 4px;
+
+  .column {
+    display: flex;
+    flex-direction: column;
+    flex: 100%;
+    max-width: 100%;
+    padding: 0 4px;
+    gap: 1rem;
+  }
+}
+
+.header {
+  display: flex;
+  margin-bottom: 16px;
+  border-bottom: thin solid #e0e0e0;
+  justify-content: space-between;
+}
+
+.item {
+  color: black;
+  display: flex;
+  align-items: flex-start;
+  &:hover {
+    text-decoration: none;
+    color: #1565c0;
+  }
+  //   width: 100%;
+  //   max-width: 100%;
+  //   justify-content: space-between;
+
+  .item-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .title {
+    margin: 0px;
+    margin-left: 8px;
+    font-size: 2rem;
+  }
+
+  .date {
+    margin-left: auto;
+    color: gray;
+  }
+}
+
+/* Responsive layout - makes the columns stack on top of each other instead of next to each other */
+@media screen and (max-width: 768px) {
+  .posts-events {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .posts {
+    flex: 100%;
+    max-width: 100%;
+  }
+
+  .column {
+    flex: 100%;
+    max-width: 100%;
+    padding: 0 4px;
+  }
+}
