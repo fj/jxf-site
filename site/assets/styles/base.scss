@@ -1,5 +1,6 @@
 @import "./common.scss";
 @import "./author.scss";
+@import "./posts.scss";
 
 // mathjax support
 // .fas::before {
@@ -7,6 +8,14 @@
 //   display: inline-block;
 //   vertical-align: middle;
 // }
+
+.container {
+  margin: 1rem auto;
+  max-width: 120rem;
+  width: 100%;
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
 
 code.has-jax {
   -webkit-font-smoothing: antialiased;

@@ -1,0 +1,15 @@
+<section class="container">
+  <!-- Top section -->
+  <section class="centered">
+    <div class="about">
+      {{ partialCached "home/avatar.html" . }} {{ partialCached
+      "home/author.html" . }} {{ partialCached "home/social.html" . }}
+    </div>
+  </section>
+
+  <!-- Posts section -->
+  <section class="posts-events">
+    {{ partialCached "posts/left.html" . }} {{ partialCached "posts/right.html"
+    . }}
+  </section>
+</section>
