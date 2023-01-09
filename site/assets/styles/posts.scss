@@ -58,7 +58,7 @@
 }
 
 /* Responsive layout - makes the columns stack on top of each other instead of next to each other */
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 992px) {
   .posts-events {
     display: flex;
     flex-direction: column;
