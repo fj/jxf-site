@@ -16,7 +16,7 @@
     flex: 100%;
     max-width: 100%;
     padding: 0 4px;
-    gap: 1rem;
+    gap: 2rem;
   }
 }
 
@@ -30,6 +30,7 @@
 .item {
   color: black;
   display: flex;
+  gap: 1em;
   align-items: flex-start;
   &:hover {
     text-decoration: none;
@@ -49,11 +50,13 @@
     margin: 0px;
     margin-left: 8px;
     font-size: 2rem;
+    font-weight: 400;
   }
 
   .date {
     margin-left: auto;
     color: gray;
+    font-weight: 400;
   }
 }
 
