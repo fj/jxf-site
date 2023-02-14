@@ -42,8 +42,12 @@
 
   .item-left {
     display: flex;
-    align-items: center;
+    // align-items: center;
     gap: 4px;
+
+    i {
+      margin-top: 12px;
+    }
   }
 
   .title {
@@ -55,6 +59,11 @@
 
   .date {
     margin-left: auto;
+    margin-right: 0px;
+    text-align: right;
+    // width: 100px;
+    max-width: 120px;
+    width: 100%;
     color: gray;
     font-weight: 400;
   }
