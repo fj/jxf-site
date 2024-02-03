@@ -1,4 +1,4 @@
-{{ $avatarUrl := .Site.Params.Get "author" "avatar" "url" }}
+{{ $avatarUrl := .Site.Params.Get "authorData" "avatar" "url" }}
 
 {{ if and ($avatarUrl) (not (isset .Site.Params "gravatar")) }}
   {{ with $avatarUrl }}

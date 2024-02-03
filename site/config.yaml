@@ -13,7 +13,8 @@ params:
   customizations:
     styles:
       - "styles/base.scss"
-  author:
+  author: "John Feminella"
+  authorData:
     name: "John Feminella"
     tagline: "software engineer · enthusiastic technologist · curiosity advocate"
     avatar:
