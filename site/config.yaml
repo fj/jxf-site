@@ -20,28 +20,41 @@ params:
     avatar:
       url: "https://s3.amazonaws.com/assets.jxf.me/images/jf.jpeg"
   social:
-    - name: github
+    - name: GitHub
       url: https://github.com/fj
-      icon: fa fa-3x fa-github
+      icon: fa-brands fa-3x fa-github
+      rel: me
       target: _blank
       weight: 1
-    - name: twitter
-      url: https://twitter.com/jxxf
-      icon: fa fa-3x fa-twitter
+    - name: Mastodon
+      url: https://mastodon.social/@jxf@mastodon.social/
+      icon: fa-brands fa-3x fa-mastodon
+      rel: me
       target: _blank
       weight: 2
-    - name: linkedIn
-      url: https://www.linkedin.com/in/johnxf
-      icon: fa fa-3x fa-linkedin
+    - name: Twitter
+      url: https://twitter.com/jxxf
+      icon: fa-brands fa-3x fa-twitter
+      rel: me
+      target: _blank
       weight: 3
-    - name: stackOverflow
-      url: https://stackoverflow.com/users/75170/john-feminella
-      icon: fa fa-3x fa-stack-overflow
+    - name: LinkedIn
+      url: https://www.linkedin.com/in/johnxf
+      icon: fa-brands fa-3x fa-linkedin
+      rel: me
+      target: _blank
       weight: 4
-    - name: connect
-      url: /self.html#connect
-      icon: fa fa-3x fa-envelope
+    - name: StackOverflow
+      url: https://stackoverflow.com/users/75170/john-feminella
+      icon: fa-brands fa-3x fa-stack-overflow
+      target: _blank
       weight: 5
+    - name: Connect
+      url: /self.html#connect
+      icon: fa-solid fa-3x fa-envelope
+      rel: me
+      target: _blank
+      weight: 6
 
 languages:
   en:
