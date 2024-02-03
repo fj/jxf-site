@@ -59,7 +59,7 @@ tasks:
     deps: [clean]
     cmds:
       - |-
-        hugo serve \
+        hugo server \
           --source {{.SOURCE_PATH}} \
           --destination {{.OUTPUT_PATH}}
 
@@ -68,7 +68,7 @@ tasks:
     deps: [clean]
     cmds:
       - |-
-        hugo build \
+        hugo \
           --source {{.SOURCE_PATH}} \
           --destination {{.OUTPUT_PATH}}
 
