@@ -14,16 +14,22 @@ vars:
   ASSETS_REMOTE_PATH: "s3://site-assets.jxf.me"
 
   # Get AWS secret key if not already defined in environment.
-  AWS_SECRET_ACCESS_KEY:
+  SECRETS_AWS_SECRET_ACCESS_KEY:
     sh: |
-      test -z "$AWS_SECRET_ACCESS_KEY" && aws configure get aws_secret_access_key --profile jxf-site
+      test -z "$SECRETS_AWS_SECRET_ACCESS_KEY" && \
+      aws configure get aws_secret_access_key --profile jxf-site || \
+      echo "$SECRETS_AWS_SECRET_ACCESS_KEY"
 
   # Get AWS access key if not already defined in environment.
-  AWS_ACCESS_KEY_ID:
+  SECRETS_AWS_ACCESS_KEY_ID:
     sh: |
-      test -z "$AWS_ACCESS_KEY_ID" && aws configure get aws_access_key_id --profile jxf-site
+      test -z "$SECRETS_AWS_ACCESS_KEY_ID" && \
+      aws configure get aws_access_key_id --profile jxf-site || \
+      echo "$SECRETS_AWS_ACCESS_KEY_ID"
 
 tasks:
+
+
   clean:
     desc: "remove temporary paths"
     cmds:
@@ -34,16 +40,18 @@ tasks:
     desc: "sync assets up to cloud"
     cmds:
       - |-
-        export AWS_ACCESS_KEY_ID={{.AWS_ACCESS_KEY_ID}}
-        export AWS_SECRET_ACCESS_KEY={{.AWS_SECRET_ACCESS_KEY}}
+        AWS_ACCESS_KEY_ID={{.SECRETS_AWS_ACCESS_KEY_ID}} \
+        AWS_SECRET_ACCESS_KEY={{.SECRETS_AWS_SECRET_ACCESS_KEY}} \
+        AWS_DEFAULT_REGION=us-east-1 \
         aws s3 sync --dryrun {{.ASSETS_LOCAL_PATH}} {{.ASSETS_REMOTE_PATH}}
 
   "sync:down":
     desc: "sync assets down to local environment"
     cmds:
       - |-
-        export AWS_ACCESS_KEY_ID={{.AWS_ACCESS_KEY_ID}}
-        export AWS_SECRET_ACCESS_KEY={{.AWS_SECRET_ACCESS_KEY}}
+        AWS_ACCESS_KEY_ID={{.SECRETS_AWS_ACCESS_KEY_ID}} \
+        AWS_SECRET_ACCESS_KEY={{.SECRETS_AWS_SECRET_ACCESS_KEY}} \
+        AWS_DEFAULT_REGION=us-east-1 \
         aws s3 sync --dryrun {{.ASSETS_REMOTE_PATH}} {{.ASSETS_LOCAL_PATH}}
 
   serve:
@@ -60,7 +68,7 @@ tasks:
     deps: [clean]
     cmds:
       - |-
-        hugo \
+        hugo build \
           --source {{.SOURCE_PATH}} \
           --destination {{.OUTPUT_PATH}}
 
