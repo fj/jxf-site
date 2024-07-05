@@ -6,3 +6,6 @@ public
 .hugo_build.lock
 resources/_gen
 site/resources/_gen
+
+# hugo: Ignore binary assets.
+site/assets/images
