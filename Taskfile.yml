@@ -36,23 +36,27 @@ tasks:
       - rm -rf {{.OUTPUT_PATH}}
       - rm -rf {{.RESOURCES_PATH}}
 
-  "sync:up":
-    desc: "sync assets up to cloud"
+  "sync:up*":
+    desc: "sync assets up to cloud (use :up:hard to bypass dry run)"
+    vars:
+      q: "{{index .MATCH 0}}"
     cmds:
       - |-
         AWS_ACCESS_KEY_ID={{.SECRETS_AWS_ACCESS_KEY_ID}} \
         AWS_SECRET_ACCESS_KEY={{.SECRETS_AWS_SECRET_ACCESS_KEY}} \
         AWS_DEFAULT_REGION=us-east-1 \
-        aws s3 sync --dryrun {{.ASSETS_LOCAL_PATH}} {{.ASSETS_REMOTE_PATH}}
+        aws s3 sync {{if ne .q ":hard"}}--dryrun{{ end }} {{.ASSETS_LOCAL_PATH}} {{.ASSETS_REMOTE_PATH}}
 
-  "sync:down":
-    desc: "sync assets down to local environment"
+  "sync:down*":
+    desc: "sync assets down to local environment (use :down:hard to bypass dry run)"
+    vars:
+      q: "{{index .MATCH 0}}"
     cmds:
       - |-
         AWS_ACCESS_KEY_ID={{.SECRETS_AWS_ACCESS_KEY_ID}} \
         AWS_SECRET_ACCESS_KEY={{.SECRETS_AWS_SECRET_ACCESS_KEY}} \
         AWS_DEFAULT_REGION=us-east-1 \
-        aws s3 sync --dryrun {{.ASSETS_REMOTE_PATH}} {{.ASSETS_LOCAL_PATH}}
+        aws s3 sync {{if ne .q ":hard"}}--dryrun{{ end }} {{.ASSETS_REMOTE_PATH}} {{.ASSETS_LOCAL_PATH}}
 
   serve:
     desc: "serve website on a local webserver"
