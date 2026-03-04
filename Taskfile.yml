@@ -84,5 +84,5 @@ tasks:
     cmds:
       - mkdir -p {{.CONTENT_PATH}}
       - |-
-        hugo new -k post {{.ITEM_NAME}} \
+        hugo new content --logLevel info -k posts {{.ITEM_NAME}}.md \
           --source {{.PROJECT_ROOT}}/site
