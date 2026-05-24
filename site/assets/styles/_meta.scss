@@ -1,0 +1,62 @@
+.post-meta,
+.event-meta {
+  .title {
+    display: flex;
+    margin-left: -6.5rem;
+    width: 100%;
+
+    h1 {
+      margin-bottom: 0rem;
+    }
+
+    .fas {
+      font-size: 3.2rem;
+      float: left;
+      margin-top: 6.4rem;
+      padding-top: 0.2rem;
+      width: 6rem;
+      text-align: center;
+    }
+
+    @include medium {
+      margin-left: 0px;
+    }
+  }
+}
+
+.post-sub-meta,
+.event-sub-meta {
+  background: #f1f1f1;
+  border-radius: 1rem;
+  padding-left: 2rem;
+  overflow: auto;
+  margin-bottom: 5rem;
+
+  span {
+    float: left;
+    position: relative;
+
+    @include not-first {
+      margin-left: 3rem;
+
+      @include mobile {
+        width: 100%;
+        margin-left: 0rem;
+      }
+    }
+
+    p {
+      margin: 1rem 0rem 1rem;
+    }
+
+    i {
+      padding-right: 1rem;
+    }
+  }
+}
+
+.event-sub-meta {
+  @include not-last {
+    margin-bottom: 2rem;
+  }
+}
