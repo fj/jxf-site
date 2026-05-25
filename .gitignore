@@ -9,3 +9,6 @@ site/resources/_gen
 
 # hugo: Ignore binary assets.
 site/assets/images
+
+# agent: Ignore per-agent scratch / research.
+.agents/
