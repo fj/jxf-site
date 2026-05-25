@@ -76,6 +76,14 @@ tasks:
           --source {{.SOURCE_PATH}} \
           --destination {{.OUTPUT_PATH}}
 
+  refresh-theme:
+    desc: "update hugo-coder fork to latest upstream"
+    dir: "{{.SOURCE_PATH}}/themes/hugo-coder"
+    cmds:
+      - git fetch upstream
+      - git merge upstream/main
+      - git push origin main
+
   new-post:
     desc: "add a new post (with ITEM_NAME=...)"
     preconditions:
