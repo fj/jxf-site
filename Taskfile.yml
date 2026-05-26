@@ -58,14 +58,17 @@ tasks:
         AWS_DEFAULT_REGION=us-east-1 \
         aws s3 sync {{if ne .q ":hard"}}--dryrun{{ end }} {{.ASSETS_REMOTE_PATH}} {{.ASSETS_LOCAL_PATH}}
 
-  serve:
-    desc: "serve website on a local webserver"
+  "serve*":
+    desc: "serve website on a local webserver (use :drafts to include draft posts)"
     deps: [clean]
+    vars:
+      q: "{{index .MATCH 0}}"
     cmds:
       - |-
         hugo server \
           --source {{.SOURCE_PATH}} \
-          --destination {{.OUTPUT_PATH}}
+          --destination {{.OUTPUT_PATH}} \
+          {{if eq .q ":drafts"}}--buildDrafts{{ end }}
 
   build:
     desc: "build the website and save it"
