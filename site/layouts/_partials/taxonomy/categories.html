@@ -1,0 +1,9 @@
+<div class="categories">
+  {{ partial "icon.html" "folder" }}
+  {{- range $index, $el := . -}}
+    {{- if gt $index 0 }}
+      <span class="separator">•</span>
+    {{- end }}
+    <a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a>
+  {{- end -}}
+</div>

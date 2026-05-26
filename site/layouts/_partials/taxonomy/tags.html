@@ -1,0 +1,11 @@
+<div class="tags">
+  {{ partial "icon.html" "tag" }}
+  {{- range $index, $el := . -}}
+    {{- if gt $index 0 }}
+      <span class="separator">•</span>
+    {{- end }}
+    <span class="tag">
+      <a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a>
+    </span>
+  {{- end -}}
+</div>

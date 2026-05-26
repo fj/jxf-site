@@ -22,36 +22,36 @@ params:
   social:
     - name: GitHub
       url: https://github.com/fj
-      icon: fa-brands fa-3x fa-github
+      icon: github
       rel: me
       target: _blank
       weight: 1
     - name: Mastodon
       url: https://mastodon.social/@jxf@mastodon.social/
-      icon: fa-brands fa-3x fa-mastodon
+      icon: mastodon
       rel: me
       target: _blank
       weight: 2
     - name: Twitter
       url: https://twitter.com/jxxf
-      icon: fa-brands fa-3x fa-twitter
+      icon: twitter
       rel: me
       target: _blank
       weight: 3
     - name: LinkedIn
       url: https://www.linkedin.com/in/johnxf
-      icon: fa-brands fa-3x fa-linkedin
+      icon: linkedin
       rel: me
       target: _blank
       weight: 4
     - name: StackOverflow
       url: https://stackoverflow.com/users/75170/john-feminella
-      icon: fa-brands fa-3x fa-stack-overflow
+      icon: stackoverflow
       target: _blank
       weight: 5
     - name: Connect
       url: /self.html#connect
-      icon: fa-solid fa-3x fa-envelope
+      icon: mail
       rel: me
       target: _blank
       weight: 6

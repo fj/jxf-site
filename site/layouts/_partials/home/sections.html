@@ -1,12 +1,18 @@
 <section class="container recent-content">
   <div class="sections-container">
     <div class="item-list">
-      <h2>Posts</h2>
+      <div class="section-header">
+        <h2>Posts</h2>
+        <a href="/posts" class="view-all">View all posts</a>
+      </div>
       <div class="grid-container">
         {{ range first 5 (where .Site.RegularPages "Section" "posts") }}
+        {{ $typeIcons := dict "code" "code" "quote" "message-square-quote" "post" "notebook-pen" "note" "sticky-note" "essay" "scroll-text" }}
+        {{ $postType := .Params.type | default "post" }}
+        {{ $iconName := index $typeIcons $postType | default "notebook-pen" }}
         <div class="grid-row">
           <div class="icon-column">
-            <i class="fas fa-pen-nib"></i>
+            {{ partial "icon.html" $iconName }}
           </div>
           <div class="title-column">
             <a href="{{ .RelPermalink }}">{{ .Title }}</a>
@@ -19,16 +25,21 @@
         </div>
         {{ end }}
       </div>
-      <a href="/posts" class="view-all">View all posts</a>
     </div>
 
     <div class="item-list">
-      <h2>Events</h2>
+      <div class="section-header">
+        <h2>Events</h2>
+        <a href="/events" class="view-all">View all events</a>
+      </div>
       <div class="grid-container">
         {{ range first 5 (where .Site.RegularPages "Section" "events") }}
+        {{ $typeIcons := dict "conference" "megaphone" }}
+        {{ $eventType := .Params.type | default "conference" }}
+        {{ $iconName := index $typeIcons $eventType | default "megaphone" }}
         <div class="grid-row">
           <div class="icon-column">
-            <i class="fas fa-microphone"></i>
+            {{ partial "icon.html" $iconName }}
           </div>
           <div class="title-column">
             <a href="{{ .RelPermalink }}">{{ .Title }}</a>
@@ -41,7 +52,6 @@
         </div>
         {{ end }}
       </div>
-      <a href="/events" class="view-all">View all events</a>
     </div>
   </div>
 </section>
