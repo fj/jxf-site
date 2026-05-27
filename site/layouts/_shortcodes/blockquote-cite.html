@@ -1,0 +1,10 @@
+{{- $author := .Get "author" -}}
+{{- $source := .Get "source" -}}
+<blockquote class="attributed">
+  {{ .Inner | .Page.RenderString }}
+  {{- if or $author $source -}}
+  <footer>
+    <cite>— {{ $author }}{{ with $source }}, <em>{{ . }}</em>{{ end }}</cite>
+  </footer>
+  {{- end -}}
+</blockquote>
