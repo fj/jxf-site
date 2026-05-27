@@ -6,6 +6,123 @@
 @import "./meta.scss";
 @import "./pagination.scss";
 
+.navigation-title {
+  text-transform: none;
+}
+
+h2, h3, h4, h5, h6 {
+  position: relative;
+
+  .heading-link {
+    color: inherit;
+    text-decoration: none;
+    visibility: visible;
+    font-size: inherit;
+
+    &:hover,
+    &:focus {
+      text-decoration: none;
+    }
+  }
+
+  .heading-link-icon {
+    position: absolute;
+    right: 100%;
+    padding-right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    visibility: hidden;
+  }
+
+  .heading-link-text {
+    color: inherit;
+  }
+
+  &:hover .heading-link-icon {
+    visibility: visible;
+  }
+}
+
+.post-content {
+  a {
+    text-decoration: underline;
+    text-decoration-color: #ccc;
+    text-underline-offset: 0.2em;
+    text-decoration-thickness: 1px;
+
+    &:hover,
+    &:focus {
+      text-decoration-color: currentColor;
+    }
+
+    @include dark-mode {
+      text-decoration-color: #555;
+    }
+  }
+
+  figure,
+  p:has(> img:only-child) {
+    border-top: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+    padding: 1.5rem 0;
+    margin: 2rem 0;
+
+    @include dark-mode {
+      border-color: #444;
+    }
+  }
+
+  figure + figure,
+  p:has(> img:only-child) + figure,
+  figure + p:has(> img:only-child),
+  p:has(> img:only-child) + p:has(> img:only-child) {
+    border-top: none;
+    margin-top: 0;
+    padding-top: 0;
+  }
+}
+
+kbd {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  font-family: monospace;
+  font-size: 0.85em;
+  line-height: 1.4;
+  color: #333;
+  background: linear-gradient(to bottom, #f9f9f9, #e8e8e8);
+  border: 1px solid #b4b4b4;
+  border-bottom-width: 2px;
+  border-radius: 0.4rem;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+  white-space: nowrap;
+
+  @include dark-mode {
+    color: #ddd;
+    background: linear-gradient(to bottom, #555, #3a3a3a);
+    border-color: #222;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+  }
+}
+
+table td,
+table th {
+  border-color: #ddd;
+  border-width: 1px;
+
+  @include dark-mode {
+    border-color: #444;
+  }
+}
+
+hr {
+  border: none;
+  border-top: 1px solid #ddd;
+
+  @include dark-mode {
+    border-top-color: #444;
+  }
+}
+
 code.has-jax {
   -webkit-font-smoothing: antialiased;
   background: inherit !important;
