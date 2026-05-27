@@ -1,0 +1,136 @@
+.sidenote {
+  float: right;
+  clear: right;
+  width: 22rem;
+  margin-right: -25rem;
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  padding-left: 1.5rem;
+  border-left: 2px solid #ccc;
+  font-size: 1.4rem;
+  line-height: 1.8;
+  font-style: normal;
+  color: #666;
+  text-align: left;
+
+  p {
+    margin: 0.3rem 0;
+    text-align: left;
+  }
+
+  @include dark-mode {
+    color: #aaa;
+    border-left-color: #555;
+  }
+}
+
+.sidenote-number {
+  font-weight: 700;
+  font-size: 1.2rem;
+  margin-right: 0.3rem;
+  color: #999;
+
+  @include dark-mode {
+    color: #777;
+  }
+}
+
+@media (max-width: 1439px) {
+  .sidenote {
+    display: none;
+  }
+}
+
+@media (min-width: 1440px) {
+  .has-sidenotes .footnotes {
+    display: none;
+  }
+}
+
+.footnote-tooltip {
+  position: fixed;
+  z-index: 1000;
+  max-width: 30rem;
+  padding: 1.2rem 1.5rem;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 0.6rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  font-size: 1.4rem;
+  line-height: 1.7;
+  color: #333;
+
+  p {
+    margin: 0.4rem 0;
+    text-align: left;
+    font-style: normal;
+  }
+
+  @include dark-mode {
+    background: #2d2d2d;
+    border-color: #555;
+    color: #ddd;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  }
+}
+
+.footnote-tooltip-close {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.6rem;
+  background: none;
+  border: none;
+  font-size: 1.8rem;
+  line-height: 1;
+  cursor: pointer;
+  color: #999;
+  padding: 0.2rem 0.4rem;
+
+  &:hover {
+    color: #333;
+  }
+
+  @include dark-mode {
+    color: #888;
+
+    &:hover {
+      color: #ddd;
+    }
+  }
+}
+
+blockquote.attributed {
+  footer {
+    margin-top: 0.5rem;
+
+    cite {
+      color: #777;
+      font-style: normal;
+
+      @include dark-mode {
+        color: #999;
+      }
+    }
+  }
+}
+
+.notice .notice-title {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding-left: 1.2rem;
+
+  svg.icon {
+    flex-shrink: 0;
+    width: 1.8rem;
+    height: 1.8rem;
+  }
+}
+
+.notice.note .notice-title svg { color: #5e35b1; }
+.notice.tip .notice-title svg { color: #00897b; }
+.notice.example .notice-title svg { color: #6d4c41; }
+.notice.question .notice-title svg { color: #7cb342; }
+.notice.info .notice-title svg { color: #1e88e5; }
+.notice.warning .notice-title svg { color: #ffb300; }
+.notice.error .notice-title svg { color: #e53935; }

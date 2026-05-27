@@ -10,6 +10,8 @@ markup:
       unsafe: true
 
 params:
+  customJS:
+    - "js/sidenotes.js"
   customizations:
     styles:
       - "styles/base.scss"
