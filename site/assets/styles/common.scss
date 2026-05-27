@@ -19,6 +19,17 @@
   }
 }
 
+@mixin dark-mode {
+  @at-root body.colorscheme-dark & {
+    @content;
+  }
+  @at-root body.colorscheme-auto & {
+    @media (prefers-color-scheme: dark) {
+      @content;
+    }
+  }
+}
+
 @mixin not-last {
   &:not(:last-child) {
     @content;
