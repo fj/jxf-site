@@ -1,4 +1,12 @@
 document.addEventListener("DOMContentLoaded", function () {
+  // Viewport width (px) at/above which footnotes render as margin sidenotes
+  // rather than tap-to-open tooltips.
+  const WIDE_BREAKPOINT = 1440;
+  // Tooltip positioning distances, in px.
+  const VIEWPORT_MARGIN = 16; // min gap kept between the tooltip and the viewport edges
+  const TOOLTIP_GAP = 8; // vertical gap between the reference and the tooltip
+  const TOOLTIP_OFFSET_X = 80; // horizontal shift left of the reference
+
   var footnotesSection = document.querySelector(
     '.footnotes, [role="doc-endnotes"]'
   );
@@ -37,7 +45,7 @@ document.addEventListener("DOMContentLoaded", function () {
     number.textContent = (i + 1) + ".";
 
     var elementChildren = Array.from(content.children).filter(function (child) {
-      return child.nodeType === 1;
+      return child.nodeType === Node.ELEMENT_NODE;
     });
 
     if (elementChildren.length) {
@@ -62,7 +70,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Tooltip behavior for narrow viewports
   var activeTooltip = null;
-  var WIDE_BREAKPOINT = 1440;
 
   function isNarrow() {
     return window.innerWidth < WIDE_BREAKPOINT;
@@ -119,19 +126,22 @@ document.addEventListener("DOMContentLoaded", function () {
       var sup = ref.closest("sup") || ref.parentElement;
       var supRect = sup.getBoundingClientRect();
       var ttRect = tooltip.getBoundingClientRect();
-      var margin = 16;
 
       // The tooltip width is fixed in CSS, so it never shrinks near an edge;
       // clamp the position to keep it fully inside the viewport.
-      var maxLeft = Math.max(margin, window.innerWidth - ttRect.width - margin);
+      var maxLeft = Math.max(
+        VIEWPORT_MARGIN,
+        window.innerWidth - ttRect.width - VIEWPORT_MARGIN
+      );
       tooltip.style.left =
-        Math.min(Math.max(margin, supRect.left - 80), maxLeft) + "px";
+        Math.min(Math.max(VIEWPORT_MARGIN, supRect.left - TOOLTIP_OFFSET_X), maxLeft) +
+        "px";
 
-      var top = supRect.bottom + 8;
-      if (top + ttRect.height > window.innerHeight - margin) {
-        top = supRect.top - ttRect.height - 8;
+      var top = supRect.bottom + TOOLTIP_GAP;
+      if (top + ttRect.height > window.innerHeight - VIEWPORT_MARGIN) {
+        top = supRect.top - ttRect.height - TOOLTIP_GAP;
       }
-      tooltip.style.top = Math.max(margin, top) + "px";
+      tooltip.style.top = Math.max(VIEWPORT_MARGIN, top) + "px";
 
       activeTooltip = tooltip;
     });
