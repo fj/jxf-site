@@ -35,15 +35,22 @@ document.addEventListener("DOMContentLoaded", function () {
     var number = document.createElement("span");
     number.className = "sidenote-number";
     number.textContent = (i + 1) + ".";
-    sidenote.appendChild(number);
-    sidenote.append(" ");
 
-    Array.from(content.children).forEach(function (child) {
-      var clone = child.cloneNode(true);
-      if (clone.nodeType === 1) {
-        sidenote.appendChild(clone);
-      }
+    var elementChildren = Array.from(content.children).filter(function (child) {
+      return child.nodeType === 1;
     });
+
+    if (elementChildren.length) {
+      elementChildren.forEach(function (child, idx) {
+        var clone = child.cloneNode(true);
+        if (idx === 0) {
+          clone.insertBefore(number, clone.firstChild);
+        }
+        sidenote.appendChild(clone);
+      });
+    } else {
+      sidenote.appendChild(number);
+    }
 
     var sup = ref.closest("sup") || ref.parentElement;
     if (sup && sup.parentNode) {
