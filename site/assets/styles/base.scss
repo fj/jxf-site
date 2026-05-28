@@ -7,11 +7,25 @@
 @import "./pagination.scss";
 @import "./sidenotes.scss";
 
+html {
+  font-size: 80%;
+}
+
 body {
   font-family: "PT Sans", system-ui, sans-serif;
 }
 
-.navigation-title {
+h2, h3, h4, h5, h6 {
+  margin-top: 3rem;
+  margin-bottom: 1rem;
+}
+
+.content article p {
+  hyphens: none;
+  text-align: left;
+}
+
+.navigation .navigation-title {
   text-transform: none;
 }
 
