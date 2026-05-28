@@ -10,7 +10,7 @@ site/resources/_gen
 # hugo: Ignore binary assets.
 site/assets/images
 
-# hugo: Ignore self-hosted webfonts (fetched via `task fonts`).
+# hugo: Ignore self-hosted webfonts (fetched via `task assets:fonts:download`).
 site/static/fonts/FantasqueSansMono-*.woff2
 site/static/fonts/FantasqueSansMono-LICENSE.txt
 
