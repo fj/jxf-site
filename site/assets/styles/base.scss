@@ -123,6 +123,11 @@ kbd {
   }
 }
 
+pre,
+code {
+  font-family: $mono-font-family;
+}
+
 table td,
 table th {
   border-color: #ddd;
