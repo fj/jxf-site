@@ -4,6 +4,12 @@ title: "{ jxf }"
 
 theme: "hugo-coder"
 
+taxonomies:
+  tag: "tags"
+  category: "categories"
+  author: "authors"
+  series: "series"
+
 markup:
   goldmark:
     renderer:
