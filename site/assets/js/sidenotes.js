@@ -118,20 +118,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
       var sup = ref.closest("sup") || ref.parentElement;
       var supRect = sup.getBoundingClientRect();
+      var ttRect = tooltip.getBoundingClientRect();
+      var margin = 16;
 
-      tooltip.style.top = supRect.bottom + 8 + "px";
-      tooltip.style.left = Math.max(16, supRect.left - 80) + "px";
+      // The tooltip width is fixed in CSS, so it never shrinks near an edge;
+      // clamp the position to keep it fully inside the viewport.
+      var maxLeft = Math.max(margin, window.innerWidth - ttRect.width - margin);
+      tooltip.style.left =
+        Math.min(Math.max(margin, supRect.left - 80), maxLeft) + "px";
 
-      requestAnimationFrame(function () {
-        var ttRect = tooltip.getBoundingClientRect();
-        if (ttRect.right > window.innerWidth - 16) {
-          tooltip.style.left =
-            window.innerWidth - ttRect.width - 16 + "px";
-        }
-        if (ttRect.bottom > window.innerHeight - 16) {
-          tooltip.style.top = supRect.top - ttRect.height - 8 + "px";
-        }
-      });
+      var top = supRect.bottom + 8;
+      if (top + ttRect.height > window.innerHeight - margin) {
+        top = supRect.top - ttRect.height - 8;
+      }
+      tooltip.style.top = Math.max(margin, top) + "px";
 
       activeTooltip = tooltip;
     });
