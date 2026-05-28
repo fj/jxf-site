@@ -7,6 +7,10 @@
 @import "./pagination.scss";
 @import "./sidenotes.scss";
 
+body {
+  font-family: "PT Sans", system-ui, sans-serif;
+}
+
 .navigation-title {
   text-transform: none;
 }
