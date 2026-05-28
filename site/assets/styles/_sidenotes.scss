@@ -44,7 +44,9 @@
 .footnote-tooltip {
   position: fixed;
   z-index: 1000;
-  max-width: 30rem;
+  box-sizing: border-box;
+  width: 30rem;
+  max-width: calc(100vw - 32px);
   padding: 1.2rem 1.5rem;
   background: #fff;
   border: 1px solid #ddd;
