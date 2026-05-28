@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" width="1200" height="300">
+  <defs>
+    <linearGradient id="pano-sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#74b9ff"/>
+      <stop offset="100%" stop-color="#dfe6e9"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="300" fill="url(#pano-sky)"/>
+  <polygon points="0,220 120,120 240,180 360,90 480,150 600,100 720,160 840,80 960,140 1080,110 1200,170 1200,300 0,300" fill="#2d3436" opacity="0.15"/>
+  <polygon points="0,250 100,180 200,220 350,140 500,200 650,160 800,190 950,130 1100,180 1200,150 1200,300 0,300" fill="#2d3436" opacity="0.25"/>
+  <polygon points="0,280 150,230 300,260 450,210 600,250 750,220 900,240 1050,200 1200,230 1200,300 0,300" fill="#2d3436" opacity="0.4"/>
+  <polygon points="0,300 80,270 200,290 350,260 500,280 650,265 800,280 950,255 1100,275 1200,260 1200,300 0,300" fill="#636e72"/>
+  <circle cx="200" cy="60" r="30" fill="#ffeaa7" opacity="0.8"/>
+</svg>
