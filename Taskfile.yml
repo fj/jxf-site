@@ -98,6 +98,28 @@ tasks:
         hugo \
           --source {{.SOURCE_PATH}} \
           --destination {{.OUTPUT_PATH}}
+      - task: build:remove-unused-theme-elements
+
+  build:remove-unused-theme-elements:
+    desc: "remove theme-provided assets this site doesn't use from the build output"
+    cmds:
+      - |-
+        # The hugo-coder theme ships Font Awesome web fonts in its static/
+        # directory, so Hugo copies them into the build output even though this
+        # site imports no Font Awesome stylesheet and renders no FA icons (we
+        # use inline Lucide SVGs instead). Strip the unused fonts so they are
+        # never published.
+        echo "==> build:remove-unused-theme-elements: removing unused Font Awesome fonts from {{.OUTPUT_PATH}}/fonts"
+        fa_fonts=$(find {{.OUTPUT_PATH}}/fonts -maxdepth 1 -name 'fa-*' 2>/dev/null | sort)
+        if [ -z "$fa_fonts" ]; then
+          echo "    nothing to remove (output already free of Font Awesome fonts)"
+        else
+          echo "$fa_fonts" | while IFS= read -r f; do
+            echo "    removing $(basename "$f") ($(du -h "$f" | cut -f1))"
+            rm -f "$f"
+          done
+          echo "==> build:remove-unused-theme-elements: done"
+        fi
 
   refresh-theme:
     desc: "update hugo-coder fork to latest upstream"
