@@ -1,0 +1,16 @@
+---
+title: "U.S. Environmental Protection Agency"
+description: "National Emissions Inventory System."
+date: "2007-01-01"
+client: "U.S. Environmental Protection Agency"
+role: "Engineer"
+years: "2007--2009"
+technologies: ["environment", "Java", "scalability", "web"]
+weight: 7
+---
+
+EIS is the world's largest emissions inventory database, and is managed by the tireless efforts of the U.S. Environmental Protection Agency. An emissions inventory is a collection of data and metadata about pollution of different kinds. Sometimes this pollution is natural, like ash from forest fires or ozone from lightning strikes; other times it's the result of manmade activities, like driving cars or generating power. But all of it has to be tracked to get a complete picture of how pollution affects us.
+
+Every three years, an enormous partnership of cities, counties, states, and industries across the US submit accumulated metadata about the emissions under their jurisdiction. The resulting summary dataset constructed by EIS, called the National Emissions Inventory, is used by climatologists, academics, and policymakers to understand how pollution affects all of us, and to develop strategies for minimizing or eliminating its harm. For example, this map shows every location in the US that emits tetrachloroethylene, a toxic carcinogen and organic solvent with widespread industrial applications.
+
+My team built the modern EIS still in use today, transitioning the agency away from a system where sensitive data was reported by shipping CDs around. It's an enormous Java web application which contains hundreds of data integrity checks and stores terabytes of data, culminating in a system that represents a century's experience of expert knowledge in the air emissions domain.
