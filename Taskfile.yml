@@ -36,6 +36,31 @@ tasks:
       - rm -rf {{.OUTPUT_PATH}}
       - rm -rf {{.RESOURCES_PATH}}
 
+  fonts:
+    desc: "download self-hosted webfonts"
+    vars:
+      FANTASQUE_VERSION: "1.8.0"
+      FONTS_PATH: "{{.SOURCE_PATH}}/static/fonts"
+    status:
+      - test -f {{.FONTS_PATH}}/FantasqueSansMono-Regular.woff2
+      - test -f {{.FONTS_PATH}}/FantasqueSansMono-Italic.woff2
+      - test -f {{.FONTS_PATH}}/FantasqueSansMono-Bold.woff2
+      - test -f {{.FONTS_PATH}}/FantasqueSansMono-BoldItalic.woff2
+    cmds:
+      - mkdir -p {{.FONTS_PATH}}
+      - |-
+        tmp=$(mktemp -d)
+        trap 'rm -rf "$tmp"' EXIT
+        curl --location --fail --silent \
+          "https://github.com/belluzj/fantasque-sans/releases/download/v{{.FANTASQUE_VERSION}}/FantasqueSansMono-Normal.tar.gz" \
+          | tar -xz -C "$tmp"
+        cp "$tmp"/Webfonts/FantasqueSansMono-Regular.woff2 \
+           "$tmp"/Webfonts/FantasqueSansMono-Italic.woff2 \
+           "$tmp"/Webfonts/FantasqueSansMono-Bold.woff2 \
+           "$tmp"/Webfonts/FantasqueSansMono-BoldItalic.woff2 \
+           {{.FONTS_PATH}}/
+        cp "$tmp"/LICENSE.txt {{.FONTS_PATH}}/FantasqueSansMono-LICENSE.txt
+
   "sync:up*":
     desc: "sync assets up to cloud (use :up:hard to bypass dry run)"
     vars:
@@ -60,7 +85,7 @@ tasks:
 
   "serve*":
     desc: "serve website on a local webserver (use :drafts to include draft posts)"
-    deps: [clean]
+    deps: [clean, fonts]
     vars:
       q: "{{index .MATCH 0}}"
     cmds:
@@ -72,7 +97,7 @@ tasks:
 
   build:
     desc: "build the website and save it"
-    deps: [clean]
+    deps: [clean, fonts]
     cmds:
       - |-
         hugo \

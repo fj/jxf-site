@@ -86,7 +86,7 @@ h2, h3, h4, h5, h6 {
 kbd {
   display: inline-block;
   padding: 0.2rem 0.6rem;
-  font-family: monospace;
+  font-family: $mono-font-family;
   font-size: 0.85em;
   line-height: 1.4;
   color: #333;
