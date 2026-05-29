@@ -12,7 +12,7 @@
   flex-wrap: wrap;
   width: 100%;
 
-  @include mobile {
+  @include tablet {
     flex-direction: column;
   }
 }
@@ -44,7 +44,7 @@
     width: 100%;
   }
 
-  @include mobile {
+  @include tablet {
     width: 100%;
   }
 }
