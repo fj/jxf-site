@@ -2,9 +2,13 @@
   flex-direction: column;
 }
 
+.recent-content {
+  margin-top: 6rem;
+}
+
 .sections-container {
   display: flex;
-  gap: 2rem;
+  gap: 6rem;
   flex-wrap: wrap;
   width: 100%;
 
