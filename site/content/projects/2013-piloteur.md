@@ -4,7 +4,10 @@ description: "Self-healing sensor network deployment platform for energy efficie
 date: "2013-01-01"
 client: "University of Virginia / National Science Foundation"
 role: "Researcher"
-years: "2013--2014"
+years:
+  start: 2013
+  end: 2014
+image: "images/projects/piloteur.jpg"
 technologies: ["smart homes", "hardware", "sensors", "Python", "Ansible", "web"]
 weight: 2
 ---

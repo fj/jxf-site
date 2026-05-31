@@ -4,7 +4,10 @@ description: "Cookie flavor profile analysis after trans fat removal."
 date: "2006-06-01"
 client: "Girl Scouts of America / Little Brownie Bakers"
 role: "Analyst"
-years: "2006--2007"
+years:
+  start: 2006
+  end: 2007
+image: "images/projects/girl-scouts.jpg"
 technologies: ["food", "statistics", "Python", "web"]
 weight: 9
 ---

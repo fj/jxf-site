@@ -4,7 +4,10 @@ description: "VisionMaster FT ECDIS-E electronic chart display system."
 date: "2006-06-01"
 client: "Northrop Grumman"
 role: "Engineer"
-years: "2006--2007"
+years:
+  start: 2006
+  end: 2007
+image: "images/projects/northrop-grumman.jpg"
 technologies: ["navigation", "geospatial", "hardware", "C#", "performance"]
 weight: 8
 ---

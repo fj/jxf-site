@@ -4,7 +4,10 @@ description: "Stellant CT injection system test platform."
 date: "2009-01-01"
 client: "Bayer HealthCare"
 role: "Engineer"
-years: "2009"
+years:
+  start: 2009
+  end: 2009
+image: "images/projects/bayer.jpg"
 technologies: ["health", "hardware", "Python", "C", "C#"]
 weight: 6
 ---

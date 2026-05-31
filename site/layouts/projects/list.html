@@ -1,0 +1,53 @@
+{{ define "title" }}
+  {{ title (i18n (lower .Title)) | default .Title }} · {{ .Site.Title }}
+{{ end }}
+{{ define "content" }}
+  <section class="container list projects-list">
+    <header>
+      <h1 class="title">
+        <a class="title-link" href="{{ .Permalink | safeURL }}">
+          {{ title (i18n (lower .Title)) | default .Title }}
+        </a>
+      </h1>
+    </header>
+    {{ .Content }}
+    <ul class="projects">
+      {{ range sort .Pages "Params.years.start" "desc" }}
+      <li class="project">
+        {{ with .Params.image }}
+        <a class="project-thumb" href="{{ $.RelPermalink }}" tabindex="-1" aria-hidden="true">
+          <img src="{{ partial "asset.html" . }}" alt="" loading="lazy">
+        </a>
+        {{ end }}
+        <div class="project-body">
+          <div class="project-heading">
+            <a class="project-title" href="{{ .RelPermalink }}">{{ .Title }}</a>
+            {{ with .Params.years }}
+            <span class="project-years">
+              {{- $start := index . "start" -}}
+              {{- $end := index . "end" -}}
+              {{- $start -}}
+              {{- if $end -}}
+                {{- if ne $end $start }}&ndash;{{ $end }}{{ end -}}
+              {{- else -}}
+                &ndash;&ctdot;
+              {{- end -}}
+            </span>
+            {{ end }}
+          </div>
+          {{ with .Params.description }}
+          <p class="project-description">{{ . }}</p>
+          {{ end }}
+          {{ with .Params.technologies }}
+          <ul class="project-tags">
+            {{ range . }}
+            <li class="tag">{{ . }}</li>
+            {{ end }}
+          </ul>
+          {{ end }}
+        </div>
+      </li>
+      {{ end }}
+    </ul>
+  </section>
+{{ end }}

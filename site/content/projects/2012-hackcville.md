@@ -4,7 +4,10 @@ description: "Mentoring budding entrepreneurs."
 date: "2012-01-01"
 client: "HackCville"
 role: "Mentor"
-years: "2012--2015"
+years:
+  start: 2012
+  end: 2015
+image: "images/projects/hackcville.jpg"
 technologies: ["entrepreneurship", "mentorship"]
 weight: 3
 ---
