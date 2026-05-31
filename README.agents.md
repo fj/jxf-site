@@ -140,7 +140,8 @@ All run from the repo root via [Task](https://taskfile.dev):
 
 | Command                       | What it does                                             |
 | ----------------------------- | -------------------------------------------------------- |
-| `task serve`                  | Live-reload server on http://localhost:1313 (cleans first) |
+| `task serve:dev`              | Live-reload server in the development environment — images served from disk, sourcemapped CSS (cleans first) |
+| `task serve:prod`             | Live-reload server in the production environment — images served from the GCS bucket, minified CSS; mirrors the Netlify build (cleans first) |
 | `task build`                  | Production build into `./out/`                            |
 | `task clean`                  | Remove `out/` and `site/resources/`                       |
 | `task new-post ITEM_NAME=foo` | Scaffold `site/content/posts/foo.md` from the archetype   |
