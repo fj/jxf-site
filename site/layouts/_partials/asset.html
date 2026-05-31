@@ -1,0 +1,43 @@
+{{- /*
+  asset — resolve an asset reference to a URL that works in both environments.
+
+  Usage:  {{ partial "asset.html" "images/projects/cardagin.jpg" }}
+
+  The argument is a path relative to the assets root (which is mirrored to the
+  GCS bucket), e.g. "images/projects/cardagin.jpg". Absolute URLs (http(s):// or
+  protocol-relative //) are passed through unchanged.
+
+  The development/production split is driven by the Hugo environment, so it is
+  identical whether you're building or running a live server:
+
+  - Development environment (`task serve:dev`): the asset is served straight
+    from disk via Hugo Pipes, so local edits show up immediately and nothing
+    has to be uploaded first.
+  - Production environment (`task serve:prod`, and the Netlify build): the asset
+    is served from the bucket at params.assets.remoteBaseURL. The binaries are
+    gitignored and pushed with `task assets:sync:up:hard`, so the build never
+    publishes them itself.
+
+  Callers don't need to know which environment is active — that's the point.
+*/ -}}
+{{- $path := . -}}
+{{- if reflect.IsMap . -}}{{ $path = .path }}{{- end -}}
+{{- $url := "" -}}
+{{- if or (hasPrefix $path "http://") (hasPrefix $path "https://") (hasPrefix $path "//") -}}
+  {{- /* Already an absolute URL; leave it alone. */ -}}
+  {{- $url = $path -}}
+{{- else -}}
+  {{- $path = strings.TrimPrefix "/" $path -}}
+  {{- if hugo.IsProduction -}}
+    {{- $base := strings.TrimSuffix "/" (site.Params.assets.remoteBaseURL | default "") -}}
+    {{- $url = printf "%s/%s" $base $path -}}
+  {{- else -}}
+    {{- with resources.Get $path -}}
+      {{- $url = .RelPermalink -}}
+    {{- else -}}
+      {{- warnf "asset.html: %q not found under assets/; serving as-is" $path -}}
+      {{- $url = $path | relURL -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- $url -}}

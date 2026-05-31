@@ -26,6 +26,12 @@ markup:
             - ["\\(", "\\)"]
 
 params:
+  # Where binary assets (images, etc.) are served from in a remote/production
+  # build. The local `site/assets/` tree is mirrored to this bucket via
+  # `task assets:sync:up:hard`. In development (`hugo server`) assets are served
+  # from disk instead — see layouts/partials/asset.html.
+  assets:
+    remoteBaseURL: "https://storage.googleapis.com/site-assets.jxf.me"
   customJS:
     - "js/sidenotes.js"
   customizations:

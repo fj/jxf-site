@@ -78,17 +78,42 @@ tasks:
         gcloud storage rsync --recursive {{if ne .q ":hard"}}--dry-run{{ end }} \
         {{.ASSETS_REMOTE_PATH}} {{.ASSETS_LOCAL_PATH}}
 
-  "serve*":
-    desc: "serve website on a local webserver (use :drafts to include draft posts)"
+  serve:
+    desc: "alias for serve:dev (the common case)"
+    cmds:
+      - task: serve:dev
+
+  serve:dev:
+    desc: "serve locally in development mode — images from disk, live reload (DRAFTS=1 to include drafts)"
+    cmds:
+      - task: serve:_run
+        vars: { HUGO_ENV: development }
+
+  serve:prod:
+    desc: "serve locally in production mode — images from the GCS bucket; mirrors the Netlify build"
+    cmds:
+      - task: serve:_run
+        vars: { HUGO_ENV: production }
+
+  # Shared serve implementation. The dev/prod split is the Hugo environment and
+  # nothing else: layouts key off `hugo.IsProduction` to choose disk vs. bucket
+  # assets and dev vs. minified CSS, so the same `hugo server` invocation
+  # faithfully previews either target (prod even live-reloads). Pass DRAFTS=1 to
+  # include draft content.
+  serve:_run:
+    internal: true
     deps: [clean, "assets:fonts:download"]
+    requires:
+      vars: [HUGO_ENV]
     vars:
-      q: "{{index .MATCH 0}}"
+      DRAFTS: '{{.DRAFTS | default ""}}'
     cmds:
       - |-
         hugo server \
           --source {{.SOURCE_PATH}} \
           --destination {{.OUTPUT_PATH}} \
-          {{if eq .q ":drafts"}}--buildDrafts{{ end }}
+          --environment {{.HUGO_ENV}} \
+          {{if .DRAFTS}}--buildDrafts{{ end }}
 
   build:
     desc: "build the website and save it"
