@@ -4,7 +4,10 @@ description: "Hotel booking API design wrapping Hilton's legacy reservation syst
 date: "2010-01-01"
 client: "Getaroom.com / Hilton Hotels and Resorts"
 role: "Engineer"
-years: "2010"
+years:
+  start: 2010
+  end: 2010
+image: "images/projects/getaroom-hilton.jpg"
 technologies: ["travel", "API", "XML", "Ruby", "scalability", "web"]
 weight: 5
 ---

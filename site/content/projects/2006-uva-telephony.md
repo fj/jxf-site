@@ -4,7 +4,10 @@ description: "Asterisk PBX telephony architecture for campus VoIP."
 date: "2006-01-01"
 client: "University of Virginia"
 role: "Engineer"
-years: "2006"
+years:
+  start: 2006
+  end: 2006
+image: "images/projects/uva-telephony.jpg"
 technologies: ["telephony", "hardware", "C", "Python", "scalability", "web"]
 weight: 10
 ---

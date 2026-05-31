@@ -4,7 +4,9 @@ description: "Predictive, proactive alerting SaaS platform."
 date: "2013-01-01"
 client: "UpHex"
 role: "Co-founder"
-years: "2013--present"
+years:
+  start: 2013
+image: "images/projects/uphex.jpg"
 technologies: ["statistics", "Ruby", "Python", "Node", "Docker", "Go", "scalability", "web"]
 weight: 1
 ---

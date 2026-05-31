@@ -4,7 +4,10 @@ description: "Technical and product leadership for a business turnaround."
 date: "2011-01-01"
 client: "Cardagin Networks"
 role: "CTO"
-years: "2011--2012"
+years:
+  start: 2011
+  end: 2012
+image: "images/projects/cardagin.jpg"
 technologies: ["B2C", "Ruby", "Python", "Objective-C", "scalability", "web", "mobile"]
 weight: 4
 ---
