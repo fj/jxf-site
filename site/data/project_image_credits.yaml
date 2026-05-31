@@ -1,0 +1,66 @@
+# Provenance and attribution for the royalty-free project images.
+#
+# The image binaries live under site/assets/images/projects/ (gitignored,
+# synced to GCS via `task assets:sync:up`) and are referenced from each
+# project's `image:` front-matter param. The originals are Creative Commons
+# licensed; this file records the source and attribution each license requires.
+
+bayer:
+  source: "https://www.flickr.com/photos/129143611@N03/15797773547"
+  title: "Philips Medical ACQSIM 2"
+  creator: "Kitmondo.com"
+  license: "CC BY 2.0"
+
+cardagin:
+  source: "https://www.flickr.com/photos/128776630@N02/16033558463"
+  title: "online shopping"
+  creator: "downloadsource.fr"
+  license: "CC BY 2.0"
+
+epa:
+  source: "https://www.flickr.com/photos/96713863@N00/625555243"
+  title: "Smokestacks"
+  creator: "Doug Waldron"
+  license: "CC BY-SA 2.0"
+
+getaroom-hilton:
+  source: "https://commons.wikimedia.org/w/index.php?curid=4310795"
+  title: "MGM Grand Macau Hotel Lobby Interior"
+  creator: "WiNG"
+  license: "CC BY 3.0"
+
+girl-scouts:
+  source: "https://www.flickr.com/photos/47264866@N00/5343442246"
+  title: "Christmas Sugar Cookies with Redhots"
+  creator: "OakleyOriginals"
+  license: "CC BY 2.0"
+
+hackcville:
+  source: "https://www.flickr.com/photos/91883096@N00/5870201878"
+  title: "Coworking at Hub Vilnius"
+  creator: "mdanys"
+  license: "CC BY 2.0"
+
+northrop-grumman:
+  source: "https://www.flickr.com/photos/26978304@N08/16153448562"
+  title: "Vessels In Gaya Bay, Borneo"
+  creator: "thienzieyung"
+  license: "CC BY 2.0"
+
+piloteur:
+  source: "https://www.flickr.com/photos/75654647@N05/15174524016"
+  title: "Withings"
+  creator: "code of the new"
+  license: "CC BY 2.0"
+
+uphex:
+  source: "https://www.flickr.com/photos/38869431@N00/475528035"
+  title: "Working/sketching during frustrating meeting"
+  creator: "juhansonin"
+  license: "CC BY 2.0"
+
+uva-telephony:
+  source: "https://www.flickr.com/photos/63490482@N03/6043430467"
+  title: "Long Distance Telephone Switchboard - Sears Roebuck Chicago ILL 1906"
+  creator: "rich701"
+  license: "CC BY 2.0"
