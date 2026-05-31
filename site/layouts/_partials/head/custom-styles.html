@@ -4,7 +4,7 @@
 
 {{ range .Site.Params.customizations.styles }}
   {{/* We don't change the targetPath to because it's transparent to users */}}
-  {{ if hugo.IsServer }}
+  {{ if not hugo.IsProduction }}
     {{ $cssOpts := (dict "enableSourceMap" true ) }}
     {{ $styles := resources.Get . | toCSS $cssOpts }}
     <link rel="stylesheet" href="{{ $styles.RelPermalink }}" media="screen">
