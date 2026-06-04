@@ -2,6 +2,28 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
 
+{{/* Self-hosted monospace webfont. The .woff2 files live under site/assets/fonts
+     (gitignored, synced to the GCS bucket); asset.html resolves each src to local
+     disk in development and to the bucket in production — the same path as the
+     project images. Fonts are always fetched in CORS mode, so the bucket must send
+     Access-Control-Allow-Origin (apply it with `task assets:cors:sync:up`). */}}
+{{- $faces := slice
+    (dict "file" "FantasqueSansMono-Regular.woff2"    "weight" 400 "style" "normal")
+    (dict "file" "FantasqueSansMono-Italic.woff2"     "weight" 400 "style" "italic")
+    (dict "file" "FantasqueSansMono-Bold.woff2"       "weight" 700 "style" "normal")
+    (dict "file" "FantasqueSansMono-BoldItalic.woff2" "weight" 700 "style" "italic") -}}
+<style>
+  {{- range $faces }}
+  @font-face {
+    font-family: "Fantasque Sans Mono";
+    src: url("{{ partial "asset.html" (printf "fonts/%s" .file) }}") format("woff2");
+    font-weight: {{ .weight }};
+    font-style: {{ .style }};
+    font-display: swap;
+  }
+  {{- end }}
+</style>
+
 {{ range .Site.Params.customizations.styles }}
   {{/* We don't change the targetPath to because it's transparent to users */}}
   {{ if not hugo.IsProduction }}

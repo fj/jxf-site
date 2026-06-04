@@ -26,7 +26,7 @@ tasks:
     desc: "download self-hosted webfonts (use :hard to force re-download)"
     vars:
       q: "{{index .MATCH 0}}"
-      FONTS_PATH: "{{.SOURCE_PATH}}/static/fonts"
+      FONTS_PATH: "{{.ASSETS_LOCAL_PATH}}/fonts"
     status:
       - test "{{.q}}" != ":hard"
       - test -f {{.FONTS_PATH}}/FantasqueSansMono-Regular.woff2
@@ -77,6 +77,17 @@ tasks:
       - |-
         gcloud storage rsync --recursive {{if ne .q ":hard"}}--dry-run{{ end }} \
         {{.ASSETS_REMOTE_PATH}} {{.ASSETS_LOCAL_PATH}}
+
+  # Webfonts are served from the bucket but, unlike <img>, fonts are always
+  # fetched in CORS mode, so the bucket must send Access-Control-Allow-Origin.
+  # Re-run after (re)creating the bucket. Auth is ambient, like the sync tasks.
+  "assets:cors:sync:up":
+    desc: "sync CORS config up to the assets bucket so cross-origin webfonts load"
+    preconditions:
+      - sh: gcloud auth list --filter=status:ACTIVE --format="value(account)" | grep -q .
+        msg: "no active gcloud account; run 'gcloud auth login' or 'gcloud auth activate-service-account --key-file=...'"
+    cmds:
+      - gcloud storage buckets update {{.ASSETS_REMOTE_PATH}} --cors-file={{.PROJECT_ROOT}}/config/gcs-cors.json
 
   serve:
     desc: "alias for serve:dev (the common case)"

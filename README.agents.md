@@ -22,6 +22,8 @@ be created via `task new-post`.
 ├── Taskfile.yml        Task runner (build, serve, sync, new-post, clean)
 ├── deploy.sh           Netlify build hook (installs Task + aws-cli, runs `task build`)
 ├── .gitmodules         Pins site/themes/hugo-coder
+├── config/             Cloud infra config (NOT Hugo config — that lives in site/config/)
+│   └── gcs-cors.json   CORS policy for the GCS assets bucket (see `task assets:cors:sync:up`)
 ├── out/                Hugo build output (gitignored)
 └── site/               Hugo project root — passed to hugo as --source
     ├── config/         Hugo config (directory-based; merged per environment)
