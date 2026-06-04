@@ -7,12 +7,10 @@ public
 resources/_gen
 site/resources/_gen
 
-# hugo: Ignore binary assets.
+# hugo: Ignore binary assets (synced to / served from the GCS bucket).
+# Fonts are fetched into this tree by `task assets:fonts:download`.
 site/assets/images
-
-# hugo: Ignore self-hosted webfonts (fetched via `task assets:fonts:download`).
-site/static/fonts/FantasqueSansMono-*.woff2
-site/static/fonts/FantasqueSansMono-LICENSE.txt
+site/assets/fonts
 
 # agent: Ignore per-agent scratch / research.
 .agents/

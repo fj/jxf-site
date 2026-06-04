@@ -1,32 +1,7 @@
-@font-face {
-  font-family: "Fantasque Sans Mono";
-  src: url("/fonts/FantasqueSansMono-Regular.woff2") format("woff2");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Fantasque Sans Mono";
-  src: url("/fonts/FantasqueSansMono-Italic.woff2") format("woff2");
-  font-weight: 400;
-  font-style: italic;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Fantasque Sans Mono";
-  src: url("/fonts/FantasqueSansMono-Bold.woff2") format("woff2");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Fantasque Sans Mono";
-  src: url("/fonts/FantasqueSansMono-BoldItalic.woff2") format("woff2");
-  font-weight: 700;
-  font-style: italic;
-  font-display: swap;
-}
-
+// The "Fantasque Sans Mono" @font-face rules are emitted by
+// layouts/_partials/head/custom-styles.html, where Hugo resolves each .woff2
+// to local disk (development) or the GCS bucket (production) through the asset
+// partial — the same mechanism as the project images.
 $mono-font-family: "Fantasque Sans Mono", monospace;
 
 @mixin desktop {
