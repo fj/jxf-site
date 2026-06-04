@@ -1,3 +1,15 @@
+.project-hero {
+  display: block;
+  width: 100%;
+  border-radius: 0.6rem;
+  border: 1px solid #ddd;
+  margin-bottom: 2.5rem;
+
+  @include dark-mode {
+    border-color: #444;
+  }
+}
+
 .projects-list {
   .projects {
     list-style: none;
