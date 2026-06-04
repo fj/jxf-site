@@ -8,7 +8,7 @@ years:
   start: 2010
   end: 2010
 image: "images/projects/getaroom-hilton.jpg"
-technologies: ["travel", "API", "XML", "Ruby", "scalability", "web"]
+tags: ["travel", "API", "XML", "Ruby", "scalability", "web"]
 weight: 5
 ---
 

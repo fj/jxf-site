@@ -8,7 +8,7 @@ years:
   start: 2006
   end: 2007
 image: "images/projects/northrop-grumman.jpg"
-technologies: ["navigation", "geospatial", "hardware", "C#", "performance"]
+tags: ["navigation", "geospatial", "hardware", "C#", "performance"]
 weight: 8
 ---
 

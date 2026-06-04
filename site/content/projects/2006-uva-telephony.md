@@ -8,7 +8,7 @@ years:
   start: 2006
   end: 2006
 image: "images/projects/uva-telephony.jpg"
-technologies: ["telephony", "hardware", "C", "Python", "scalability", "web"]
+tags: ["telephony", "hardware", "C", "Python", "scalability", "web"]
 weight: 10
 ---
 

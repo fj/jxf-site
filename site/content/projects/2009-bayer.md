@@ -8,7 +8,7 @@ years:
   start: 2009
   end: 2009
 image: "images/projects/bayer.jpg"
-technologies: ["health", "hardware", "Python", "C", "C#"]
+tags: ["health", "hardware", "Python", "C", "C#"]
 weight: 6
 ---
 

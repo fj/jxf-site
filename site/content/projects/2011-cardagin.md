@@ -8,7 +8,7 @@ years:
   start: 2011
   end: 2012
 image: "images/projects/cardagin.jpg"
-technologies: ["B2C", "Ruby", "Python", "Objective-C", "scalability", "web", "mobile"]
+tags: ["B2C", "Ruby", "Python", "Objective-C", "scalability", "web", "mobile"]
 weight: 4
 ---
 
