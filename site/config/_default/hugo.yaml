@@ -1,0 +1,26 @@
+baseURL: "https://jxf-dot-me.netlify.app/"
+locale: "en-us"
+title: "{ jxf }"
+
+theme: "hugo-coder"
+
+taxonomies:
+  tag: "tags"
+  category: "categories"
+  author: "authors"
+  series: "series"
+
+markup:
+  goldmark:
+    renderer:
+      unsafe: true
+    extensions:
+      passthrough:
+        enable: true
+        delimiters:
+          block:
+            - ["$$", "$$"]
+            - ["\\[", "\\]"]
+          inline:
+            - ["$", "$"]
+            - ["\\(", "\\)"]

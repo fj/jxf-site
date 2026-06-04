@@ -20,6 +20,4 @@ This project needs two precompiled binaries:
   * After we `sync:down:hard` our images, should we `cp site/assets/images -> static/assets/images` and then .gitignore these?
   * Made an open post about this here: https://discourse.gohugo.io/t/best-practice-for-serving-different-images-in-production-vs-development/50560
 
-* Follow new best practices for configuration -- it's `config/hugo.yaml` now instead of `config.yaml`.
-
-* We should use the per-directory environment representation to do useful overrides, like having our image path for production.
+* We should use the per-directory environment representation to do useful overrides, like having our image path for production. The base config now lives under `site/config/_default/`, so production-only overrides can go in a sibling `site/config/production/`.
