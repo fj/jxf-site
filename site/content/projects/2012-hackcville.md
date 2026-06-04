@@ -8,7 +8,7 @@ years:
   start: 2012
   end: 2015
 image: "images/projects/hackcville.jpg"
-technologies: ["entrepreneurship", "mentorship"]
+tags: ["entrepreneurship", "mentorship"]
 weight: 3
 ---
 

@@ -1,0 +1,67 @@
+{{ define "title" }}
+  {{ .Title }} · {{ .Site.Title }}
+{{ end }}
+{{ define "content" }}
+  <section class="container post project">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">
+            <a class="title-link" href="{{ .Permalink | safeURL }}">
+              {{ .Title }}
+            </a>
+          </h1>
+        </div>
+        <div class="post-meta">
+          {{ with .Params.years }}
+          <div class="date">
+            <span class="posted-on">
+              {{ partial "icon.html" "calendar" }}
+              {{- $start := index . "start" -}}
+              {{- $end := index . "end" -}}
+              {{- $start -}}
+              {{- if $end -}}
+                {{- if ne $end $start }}&ndash;{{ $end }}{{ end -}}
+              {{- else -}}
+                &ndash;&ctdot;
+              {{- end -}}
+            </span>
+          </div>
+          {{ end }}
+          {{ with .Params.role }}
+          <div class="role">
+            {{ partial "icon.html" "user" }}
+            <span>{{ . }}</span>
+          </div>
+          {{ end }}
+          {{ if and .Params.client (ne .Params.client .Title) }}
+          <div class="client">
+            {{ partial "icon.html" "folder" }}
+            <span>{{ .Params.client }}</span>
+          </div>
+          {{ end }}
+          {{ with .GetTerms "tags" }}
+          <div class="tags">
+            {{ partial "icon.html" "tag" }}
+            {{- range $index, $el := . -}}
+              {{- if gt $index 0 }}
+              <span class="separator">•</span>
+              {{- end }}
+              <span class="tag"><a href="{{ .RelPermalink }}">{{ .Page.Data.Term }}</a></span>
+            {{- end -}}
+          </div>
+          {{ end }}
+        </div>
+      </header>
+
+      <div class="post-content">
+        {{ with .Params.image }}
+        <img class="project-hero" src="{{ partial "asset.html" . }}" alt="{{ $.Title }}" loading="lazy">
+        {{ end }}
+        {{ .Content }}
+      </div>
+    </article>
+
+    {{ partial "posts/math.html" . }}
+  </section>
+{{ end }}

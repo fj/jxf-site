@@ -8,7 +8,7 @@ years:
   start: 2013
   end: 2014
 image: "images/projects/piloteur.jpg"
-technologies: ["smart homes", "hardware", "sensors", "Python", "Ansible", "web"]
+tags: ["smart homes", "hardware", "sensors", "Python", "Ansible", "web"]
 weight: 2
 ---
 

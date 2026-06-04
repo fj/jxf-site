@@ -1,3 +1,15 @@
+.project-hero {
+  display: block;
+  width: 100%;
+  border-radius: 0.6rem;
+  border: 1px solid #ddd;
+  margin-bottom: 2.5rem;
+
+  @include dark-mode {
+    border-color: #444;
+  }
+}
+
 .projects-list {
   .projects {
     list-style: none;
@@ -100,14 +112,31 @@
     .tag {
       font-size: 0.8em;
       line-height: 1;
-      padding: 0.35rem 0.6rem;
       border: 1px solid #ddd;
       border-radius: 1rem;
       color: #555;
+      transition: border-color 0.15s ease, color 0.15s ease;
+
+      a {
+        display: block;
+        padding: 0.35rem 0.6rem;
+        color: inherit;
+        text-decoration: none;
+      }
+
+      &:hover {
+        border-color: #999;
+        color: #222;
+      }
 
       @include dark-mode {
         border-color: #444;
         color: #bbb;
+
+        &:hover {
+          border-color: #777;
+          color: #fff;
+        }
       }
     }
   }

@@ -7,7 +7,7 @@ role: "Co-founder"
 years:
   start: 2013
 image: "images/projects/uphex.jpg"
-technologies: ["statistics", "Ruby", "Python", "Node", "Docker", "Go", "scalability", "web"]
+tags: ["statistics", "Ruby", "Python", "Node", "Docker", "Go", "scalability", "web"]
 weight: 1
 ---
 

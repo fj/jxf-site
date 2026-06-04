@@ -14,8 +14,9 @@
     <ul class="projects">
       {{ range sort .Pages "Params.years.start" "desc" }}
       <li class="project">
+        {{ $permalink := .RelPermalink }}
         {{ with .Params.image }}
-        <a class="project-thumb" href="{{ $.RelPermalink }}" tabindex="-1" aria-hidden="true">
+        <a class="project-thumb" href="{{ $permalink }}" tabindex="-1" aria-hidden="true">
           <img src="{{ partial "asset.html" . }}" alt="" loading="lazy">
         </a>
         {{ end }}
@@ -38,10 +39,10 @@
           {{ with .Params.description }}
           <p class="project-description">{{ . }}</p>
           {{ end }}
-          {{ with .Params.technologies }}
+          {{ with .GetTerms "tags" }}
           <ul class="project-tags">
             {{ range . }}
-            <li class="tag">{{ . }}</li>
+            <li class="tag"><a href="{{ .RelPermalink }}">{{ .Page.Data.Term }}</a></li>
             {{ end }}
           </ul>
           {{ end }}

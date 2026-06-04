@@ -8,7 +8,7 @@ years:
   start: 2006
   end: 2007
 image: "images/projects/girl-scouts.jpg"
-technologies: ["food", "statistics", "Python", "web"]
+tags: ["food", "statistics", "Python", "web"]
 weight: 9
 ---
 
