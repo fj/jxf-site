@@ -24,13 +24,17 @@ be created via `task new-post`.
 ├── .gitmodules         Pins site/themes/hugo-coder
 ├── out/                Hugo build output (gitignored)
 └── site/               Hugo project root — passed to hugo as --source
-    ├── config.yaml     Site config (legacy path; see "Outstanding TODOs")
+    ├── config/         Hugo config (directory-based; merged per environment)
+    │   └── _default/   Base config for every environment
+    │       ├── hugo.yaml       Root settings: baseURL, title, theme, taxonomies, markup
+    │       ├── params.yaml     Site params: assets, customJS, customizations, authorData, social
+    │       └── languages.yaml  Languages + the `main` navigation menu (en)
     ├── archetypes/
     │   └── posts.md    Front-matter template for `task new-post`
     ├── assets/
     │   ├── images/     Binary images (gitignored — synced from S3)
     │   └── styles/     SCSS pipeline
-    │       ├── base.scss     Entry point (referenced from config.yaml)
+    │       ├── base.scss     Entry point (referenced from config/_default/params.yaml)
     │       ├── common.scss   Responsive breakpoint mixins
     │       └── author.scss   .about styles
     ├── layouts/        Site-level overrides of the theme
@@ -98,7 +102,7 @@ taxonomies — the theme ships taxonomy partials for each
 (`_partials/taxonomy/{tags,categories,authors}.html` and
 `_partials/posts/series.html`).
 
-### Navigation menu (from `config.yaml`)
+### Navigation menu (from `config/_default/languages.yaml`)
 
 | Label | URL           | Notes                                  |
 | ----- | ------------- | -------------------------------------- |
@@ -114,7 +118,8 @@ None of these targets exist yet; creating them is part of standing up the site.
 Two distinct asset flows:
 
 1. **SCSS** — `site/assets/styles/base.scss` is listed in
-   `config.yaml` under `params.customizations.styles`. The override at
+   `config/_default/params.yaml` under `customizations.styles` (i.e. the
+   effective key `params.customizations.styles`). The override at
    `layouts/partials/head/custom-styles.html` reads that list and runs each
    entry through Hugo Pipes:
    - **Server mode** (`hugo server`): `toCSS` with sourcemaps, no fingerprint.
@@ -129,7 +134,7 @@ Two distinct asset flows:
    `SECRETS_AWS_ACCESS_KEY_ID` / `SECRETS_AWS_SECRET_ACCESS_KEY` env vars
    (the form Netlify exposes — see `deploy.sh`).
 
-   The avatar URL in `config.yaml` is hardcoded to a public S3 URL
+   The avatar URL in `config/_default/params.yaml` is hardcoded to a public S3 URL
    (`https://s3.amazonaws.com/assets.jxf.me/images/jf.jpeg`) — see the
    author's TODOs in `README.md` about making prod/dev image paths
    environment-aware.
@@ -159,7 +164,7 @@ hugo new content -k posts --source site posts/foo.md # new post
 ## Deployment
 
 `deploy.sh` is the Netlify build script: it bootstraps Task and aws-cli, then
-runs `task build`. The `baseURL` in `config.yaml`
+runs `task build`. The `baseURL` in `config/_default/hugo.yaml`
 (`https://jxf-dot-me.netlify.app/`) is the deploy target.
 
 ## Outstanding TODOs (from README.md)
@@ -171,10 +176,16 @@ proposed change touches them:
    dev reads them locally? The avatar partial is the proposed test bed.
    Open Hugo forum thread:
    https://discourse.gohugo.io/t/best-practice-for-serving-different-images-in-production-vs-development/50560
-2. **Config location** — Hugo now prefers `config/hugo.yaml` over the
-   legacy `config.yaml` this project still uses.
-3. **Per-environment overrides** — leverage Hugo's environment configs
-   for production-only overrides (e.g., the image path issue above).
+2. **Per-environment overrides** — leverage Hugo's environment configs
+   for production-only overrides (e.g., the image path issue above). The
+   directory-based config now in `site/config/_default/` is the base layer;
+   add a sibling `site/config/production/` (or `development/`) to override
+   per environment — `task serve:dev` / `serve:prod` already pass
+   `--environment`, and `task build` builds in production by default.
+
+Config location (Hugo's directory-based config under `site/config/_default/`)
+is **done** — the legacy `site/config.yaml` was split into `hugo.yaml`,
+`params.yaml`, and `languages.yaml` there.
 
 ## Gotchas for agents
 
