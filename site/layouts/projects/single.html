@@ -14,12 +14,12 @@
         </div>
         <div class="post-meta">
           {{ with .Params.years }}
+          {{- $start := index . "start" -}}
+          {{- $end := index . "end" -}}
           <div class="date">
             <span class="posted-on">
               {{ partial "icon.html" "calendar" }}
-              {{- $start := index . "start" -}}
-              {{- $end := index . "end" -}}
-              {{- $start -}}
+              {{ $start }}
               {{- if $end -}}
                 {{- if ne $end $start }}&ndash;{{ $end }}{{ end -}}
               {{- else -}}
