@@ -7,7 +7,13 @@ role: "Researcher"
 years:
   start: 2013
   end: 2014
-image: "images/projects/piloteur.jpg"
+image:
+  path: "projects/2013-piloteur/header.jpg"
+  attribution:
+    title: "Withings"
+    creator: "code of the new"
+    license: "CC BY 2.0"
+    source: "https://www.flickr.com/photos/75654647@N05/15174524016"
 tags: ["smart homes", "hardware", "sensors", "Python", "Ansible", "web"]
 weight: 2
 ---

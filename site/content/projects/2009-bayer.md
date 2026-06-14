@@ -7,7 +7,13 @@ role: "Engineer"
 years:
   start: 2009
   end: 2009
-image: "images/projects/bayer.jpg"
+image:
+  path: "projects/2009-bayer/header.jpg"
+  attribution:
+    title: "Philips Medical ACQSIM 2"
+    creator: "Kitmondo.com"
+    license: "CC BY 2.0"
+    source: "https://www.flickr.com/photos/129143611@N03/15797773547"
 tags: ["health", "hardware", "Python", "C", "C#"]
 weight: 6
 ---

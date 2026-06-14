@@ -7,7 +7,13 @@ role: "Engineer"
 years:
   start: 2010
   end: 2010
-image: "images/projects/getaroom-hilton.jpg"
+image:
+  path: "projects/2010-getaroom-hilton/header.jpg"
+  attribution:
+    title: "MGM Grand Macau Hotel Lobby Interior"
+    creator: "WiNG"
+    license: "CC BY 3.0"
+    source: "https://commons.wikimedia.org/w/index.php?curid=4310795"
 tags: ["travel", "API", "XML", "Ruby", "scalability", "web"]
 weight: 5
 ---

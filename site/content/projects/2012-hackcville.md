@@ -7,7 +7,13 @@ role: "Mentor"
 years:
   start: 2012
   end: 2015
-image: "images/projects/hackcville.jpg"
+image:
+  path: "projects/2012-hackcville/header.jpg"
+  attribution:
+    title: "Coworking at Hub Vilnius"
+    creator: "mdanys"
+    license: "CC BY 2.0"
+    source: "https://www.flickr.com/photos/91883096@N00/5870201878"
 tags: ["entrepreneurship", "mentorship"]
 weight: 3
 ---

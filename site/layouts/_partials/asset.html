@@ -1,10 +1,10 @@
 {{- /*
   asset — resolve an asset reference to a URL that works in both environments.
 
-  Usage:  {{ partial "asset.html" "images/projects/cardagin.jpg" }}
+  Usage:  {{ partial "asset.html" "projects/2011-cardagin/header.jpg" }}
 
   The argument is a path relative to the assets root (which is mirrored to the
-  GCS bucket), e.g. "images/projects/cardagin.jpg". Absolute URLs (http(s):// or
+  GCS bucket), e.g. "projects/2011-cardagin/header.jpg". Absolute URLs (http(s):// or
   protocol-relative //) are passed through unchanged.
 
   The development/production split is driven by the Hugo environment, so it is

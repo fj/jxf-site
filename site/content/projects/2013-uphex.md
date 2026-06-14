@@ -6,7 +6,11 @@ client: "UpHex"
 role: "Co-founder"
 years:
   start: 2013
-image: "images/projects/uphex.jpg"
+image:
+  path: "projects/2013-uphex/header.jpg"
+  attribution:
+    title: "Graphs of performance analytics on a laptop screen"
+    creator: "Luke Chesser"
 tags: ["statistics", "Ruby", "Python", "Node", "Docker", "Go", "scalability", "web"]
 weight: 1
 ---

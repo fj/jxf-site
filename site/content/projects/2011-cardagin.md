@@ -7,7 +7,13 @@ role: "CTO"
 years:
   start: 2011
   end: 2012
-image: "images/projects/cardagin.jpg"
+image:
+  path: "projects/2011-cardagin/header.jpg"
+  attribution:
+    title: "online shopping"
+    creator: "downloadsource.fr"
+    license: "CC BY 2.0"
+    source: "https://www.flickr.com/photos/128776630@N02/16033558463"
 tags: ["B2C", "Ruby", "Python", "Objective-C", "scalability", "web", "mobile"]
 weight: 4
 ---
