@@ -1,6 +1,6 @@
 ---
 title: "UpHex"
-description: "Predictive, proactive alerting SaaS platform."
+description: "Ad-management SaaS that helps marketing agencies launch client campaigns fast."
 date: "2013-01-01"
 client: "UpHex"
 role: "Co-founder"
@@ -15,10 +15,8 @@ tags: ["statistics", "Ruby", "Python", "Node", "Docker", "Go", "scalability", "w
 weight: 1
 ---
 
-UpHex is a business I'm really proud of. My cofounder, Bradley, was formerly the CFO of another company I consulted for, which is how we met. We started UpHex because we were convinced that businesses deserve better than to have the mountains of analytics data they collect relegated to the corporate IT dustbin.
+[UpHex](https://uphex.com) is a SaaS platform that makes it dramatically easier for marketing agencies to launch and manage paid advertising for their clients. Native ad platforms like Facebook/Meta and Google Ads are powerful but punishingly complex, and most agencies burn enormous amounts of time wrestling with them one account at a time. My cofounder, Bradley, and I started UpHex because we were convinced that agencies deserved a faster, simpler way to help the businesses they serve.
 
-The central premise of UpHex is that web-based businesses collect a lot of implicit metrics data via services like Google Analytics, Facebook, Shopify, and so on, but use very little of it. They are therefore leaving money and information on the table. Most of the time, this failure mode happens because businesses simply don't have the time or technical expertise to dissect reams of analytics data.
+The core idea is to build a campaign once and deploy it everywhere. An agency creates a winning ad template a single time, and UpHex lets them roll it out across dozens or hundreds of client accounts in just a few clicks -- going from zero to launch in minutes. On top of that foundation we've layered AI-powered tools that write ad copy, generate image and video creative, and suggest angles and targeting; landing pages and lead-capture forms; live campaign management for budgets, status, previews, and performance; and a deep integration with the GoHighLevel CRM, so agencies can offer cutting-edge advertising directly to clients from inside the tools they already use. Each agency employee thus becomes much higher leverage than they were before.
 
-That's where UpHex comes in: in exchange for a monthly subscription fee, your company authorizes UpHex to connect to the data streams currently gathering dust, and we'll analyze and process them for you in real time. When we detect that something's happening that we think you should pay attention to, we'll notify you so you can elect whether to take immediate action -- an opportunity that would otherwise have been lost forever. If you're not sure what to do (e.g., your web traffic is unexpectedly spiking) UpHex can provide some automated suggestions for actions you can take (e.g., showing you the top recent referrers to identify the new traffic source), or you can engage with an analytics counselor to get a pair of human eyes on your issue with a single click. The number of missed opportunities to improve businesses that are lost each day is truly staggering.
-
-I don't have a formal title other than cofounder, since UpHex isn't really big enough to stand on ceremony. But I act as the de facto CTO -- hiring and managing our engineering talent, setting the technical direction for the company, and making the big architectural choices that I think set us up for success. Most importantly, I get my hands dirty on a day-to-day basis, and I absolutely love it. As of 2015, UpHex has processed millions of data points, from thousands of different metrics, from hundreds of businesses.
+I don't have a formal title other than cofounder, since UpHex isn't really big enough to stand on ceremony. But I act as the de facto CTO -- hiring and managing our engineering talent, setting the technical direction for the company, and making the big architectural choices that I think set us up for success. Most importantly, I get my hands dirty on a day-to-day basis, and I absolutely love it. Today UpHex powers advertising for agencies of every size, from solo operators to teams running campaigns across hundreds of clients.
