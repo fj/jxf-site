@@ -1,0 +1,9 @@
+{{- $external := findRE "^(https?:)?//" (lower .Destination) -}}
+{{- /* External links are nofollow by default. The exceptions are the homepage
+       and standalone static pages (regular pages that aren't post or project
+       entries), where outbound links are editorially trusted. */ -}}
+{{- $isEntry := and (eq .Page.Kind "page") (in (slice "posts" "projects") .Page.Section) -}}
+{{- $nofollow := not (or .Page.IsHome (and (eq .Page.Kind "page") (not $isEntry))) -}}
+{{- $rel := slice "noopener" -}}
+{{- if $nofollow }}{{ $rel = $rel | append "nofollow" }}{{ end -}}
+<a href="{{ .Destination | safeURL }}"{{ with .Title }} title="{{ . }}"{{ end }}{{ if $external }} class="external-link" target="_blank" rel="{{ delimit $rel " " }}"{{ end }}>{{ .Text | safeHTML }}</a>
