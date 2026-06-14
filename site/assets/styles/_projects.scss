@@ -1,12 +1,33 @@
 .project-hero {
   display: block;
   width: 100%;
-  border-radius: 0.6rem;
-  border: 1px solid #ddd;
-  margin-bottom: 2.5rem;
+  margin: 0 0 2.5rem;
+
+  img {
+    display: block;
+    width: 100%;
+    border-radius: 0.6rem;
+    border: 1px solid #ddd;
+
+    @include dark-mode {
+      border-color: #444;
+    }
+  }
+}
+
+.project-hero-credit {
+  margin-top: 0.8rem;
+  text-align: center;
+  font-size: 1.3rem;
+  font-style: italic;
+  color: #777;
+
+  a {
+    color: inherit;
+  }
 
   @include dark-mode {
-    border-color: #444;
+    color: #999;
   }
 }
 
