@@ -6,6 +6,10 @@
   img {
     display: block;
     width: 100%;
+    // The cropped aspect-ratio is set inline per image (projects/single.html);
+    // object-fit trims the difference equally from the top and bottom.
+    object-fit: cover;
+    object-position: center;
     border-radius: 0.6rem;
     border: 1px solid #ddd;
 
