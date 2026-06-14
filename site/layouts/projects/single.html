@@ -58,9 +58,22 @@
         {{ with .Params.image }}
         {{- $img := . -}}
         {{- $credit := false -}}
-        {{- if reflect.IsMap $img }}{{ $credit = $img.attribution }}{{ end -}}
+        {{- $path := $img -}}
+        {{- if reflect.IsMap $img -}}
+          {{- $credit = $img.attribution -}}
+          {{- $path = $img.path -}}
+        {{- end -}}
+        {{- $cropStyle := "" -}}
+        {{- with resources.Get (strings.TrimPrefix "/" $path) -}}
+          {{- if eq .ResourceType "image" -}}
+            {{- /* Read the source dimensions and crop 25% off the natural height
+                   (object-fit: cover, centered) so the page content sits higher;
+                   see .project-hero in _projects.scss. */ -}}
+            {{- $cropStyle = printf "aspect-ratio: %v / %v;" .Width (mul .Height 0.75) -}}
+          {{- end -}}
+        {{- end -}}
         <figure class="project-hero">
-          <img src="{{ partial "asset.html" $img }}" alt="{{ $.Title }}" loading="lazy">
+          <img src="{{ partial "asset.html" $img }}" alt="{{ $.Title }}" loading="lazy"{{ with $cropStyle }} style="{{ . | safeCSS }}"{{ end }}>
           {{- with $credit }}
           <figcaption class="project-hero-credit">
             {{- $title := .title | default "Source" -}}
