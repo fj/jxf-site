@@ -8,9 +8,12 @@ resources/_gen
 site/resources/_gen
 
 # hugo: Ignore binary assets (synced to / served from the GCS bucket).
-# Fonts are fetched into this tree by `task assets:fonts:download`.
+# Fonts are fetched into this tree by `task assets:fonts:download`. Per-item
+# images live under site/assets/{projects,posts}/<item-id>/.
 site/assets/images
 site/assets/fonts
+site/assets/projects
+site/assets/posts
 
 # agent: Ignore per-agent scratch / research.
 .agents/

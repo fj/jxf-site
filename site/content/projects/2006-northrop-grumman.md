@@ -7,7 +7,13 @@ role: "Engineer"
 years:
   start: 2006
   end: 2007
-image: "images/projects/northrop-grumman.jpg"
+image:
+  path: "projects/2006-northrop-grumman/header.jpg"
+  attribution:
+    title: "Vessels In Gaya Bay, Borneo"
+    creator: "thienzieyung"
+    license: "CC BY 2.0"
+    source: "https://www.flickr.com/photos/26978304@N08/16153448562"
 tags: ["navigation", "geospatial", "hardware", "C#", "performance"]
 weight: 8
 ---

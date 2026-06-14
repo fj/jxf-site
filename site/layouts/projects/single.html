@@ -56,7 +56,24 @@
 
       <div class="post-content">
         {{ with .Params.image }}
-        <img class="project-hero" src="{{ partial "asset.html" . }}" alt="{{ $.Title }}" loading="lazy">
+        {{- $img := . -}}
+        {{- $credit := false -}}
+        {{- if reflect.IsMap $img }}{{ $credit = $img.attribution }}{{ end -}}
+        <figure class="project-hero">
+          <img src="{{ partial "asset.html" $img }}" alt="{{ $.Title }}" loading="lazy">
+          {{- with $credit }}
+          <figcaption class="project-hero-credit">
+            {{- $title := .title | default "Source" -}}
+            {{- with .source -}}
+              <a href="{{ . }}">{{ $title }}</a>
+            {{- else -}}
+              {{ $title }}
+            {{- end -}}
+            {{- with .creator }} by {{ . }}{{ end -}}
+            {{- with .license }} ({{ . }}){{ end -}}
+          </figcaption>
+          {{- end }}
+        </figure>
         {{ end }}
         {{ .Content }}
       </div>
