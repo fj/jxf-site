@@ -1,7 +1,21 @@
-.project-hero {
+// The hero is a <figure> inside .post-content, so it's scoped here to override
+// the generic figure treatment (horizontal rules + vertical padding) from
+// base.scss; the hero frames itself with the rounded image border instead.
+.post-content figure.project-hero {
   display: block;
-  width: 100%;
-  margin: 0 0 2.5rem;
+  float: right;
+  width: 50%;
+  border: none;
+  padding: 0;
+  margin: 0.6rem 0 1.5rem 2.5rem;
+
+  // The hero floats to the right at half the column width so the project
+  // write-up wraps around it; it spans the full width on mobile.
+  @include mobile {
+    float: none;
+    width: 100%;
+    margin: 0 0 2.5rem;
+  }
 
   img {
     display: block;
@@ -11,10 +25,10 @@
     object-fit: cover;
     object-position: center;
     border-radius: 0.6rem;
-    border: 1px solid #ddd;
+    border: 1px solid $border-color;
 
     @include dark-mode {
-      border-color: #444;
+      border-color: $border-color-dark;
     }
   }
 }
