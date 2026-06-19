@@ -330,6 +330,19 @@ When you need full control over the markup, you can use raw HTML since the rende
   <figcaption><p>Figure 5. A constrained-width image centered in the column, set to 60% of the available width using an inline style.</p></figcaption>
 </figure>
 
+## Half-width image with wrapped text
+
+Appending the Markdown attribute `{.half-width}` to a standalone image floats it to the right at half the column width, so the body text wraps around it. The image's title — the quoted string after the URL — becomes the caption. This suits supplementary images that complement the prose without interrupting it. On narrow screens, the figure falls back to the standard full-width treatment.
+
+![Concentric circles above horizontal lines on a purple gradient](portrait.svg "Figure 6. A half-width figure floated to the right of the text column, with the surrounding prose wrapping around it.")
+{.half-width}
+
+The text beside a floated figure flows naturally into the space the float leaves open. As you read down the column, each line shortens to make room for the image on the right, then returns to the full measure once the figure ends. This is the same behavior you see in printed magazines and newspapers, where an image anchored to one side of a column lets the article continue around it rather than forcing a hard break in the page.
+
+Because this figure is portrait-oriented, it occupies a fair amount of vertical space, which gives the wrapped text room to demonstrate the effect across many lines. As a rule of thumb, keep enough prose adjacent to a half-width figure that the wrap reads as intentional. A single short sentence set next to a tall image can leave an awkward gap of empty column beneath the text and beside the lower half of the image, which looks more like a mistake than a deliberate layout choice.
+
+This third paragraph continues past the bottom edge of the figure so you can see the text reflow to the full column width once the float has been cleared. The transition should be seamless: the final lines stretch back across the entire measure, and the heading that follows begins cleanly below the image rather than crowding alongside it. Taken together, these paragraphs show the text flowing around the top, the side, and the bottom of the whole image block.
+
 ## Inline mathematics
 
 Inline math is delimited by single dollar signs. For example, the quadratic formula says that if $ax^2 + bx + c = 0$, then $x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}$. Euler's identity $e^{i\pi} + 1 = 0$ relates five fundamental constants. The Pythagorean theorem states that $a^2 + b^2 = c^2$ for a right triangle with legs $a$ and $b$ and hypotenuse $c$.
