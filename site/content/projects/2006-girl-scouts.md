@@ -10,10 +10,10 @@ years:
 image:
   path: "projects/2006-girl-scouts/header.jpg"
   attribution:
-    title: "Christmas Sugar Cookies with Redhots"
-    creator: "OakleyOriginals"
-    license: "CC BY 2.0"
-    source: "https://www.flickr.com/photos/47264866@N00/5343442246"
+    title: "Chocolate chip cookies on cutting board"
+    creator: "Mshuang2"
+    license: "CC0 1.0"
+    source: "https://commons.wikimedia.org/wiki/File:Chocolate_chip_cookies_on_cutting_board.jpg"
 tags: ["food", "statistics", "Python", "web"]
 weight: 9
 ---

@@ -10,10 +10,10 @@ years:
 image:
   path: "projects/2006-northrop-grumman/header.jpg"
   attribution:
-    title: "Vessels In Gaya Bay, Borneo"
-    creator: "thienzieyung"
-    license: "CC BY 2.0"
-    source: "https://www.flickr.com/photos/26978304@N08/16153448562"
+    title: "Tacoma Harbor nautical chart (NOAA chart 18453, 2013)"
+    creator: "NOAA Office of Coast Survey"
+    license: "Public domain"
+    source: "https://commons.wikimedia.org/wiki/File:18453_-_Tacoma_Harbor_nautical_chart_NOAA_March_2013.jpg"
 tags: ["navigation", "geospatial", "hardware", "C#", "performance"]
 weight: 8
 ---
