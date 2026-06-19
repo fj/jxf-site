@@ -12,11 +12,6 @@ html {
   font-size: 80%;
 }
 
-h2, h3, h4, h5, h6 {
-  margin-top: 3rem;
-  margin-bottom: 1rem;
-}
-
 .content article p {
   hyphens: none;
   text-align: left;
@@ -27,6 +22,8 @@ h2, h3, h4, h5, h6 {
 }
 
 h2, h3, h4, h5, h6 {
+  margin-top: 3rem;
+  margin-bottom: 1rem;
   position: relative;
 
   .heading-link {
@@ -78,13 +75,13 @@ h2, h3, h4, h5, h6 {
 
   figure,
   p:has(> img:only-child) {
-    border-top: 1px solid #ddd;
-    border-bottom: 1px solid #ddd;
+    border-top: 1px solid $border-color;
+    border-bottom: 1px solid $border-color;
     padding: 1.5rem 0;
     margin: 2rem 0;
 
     @include dark-mode {
-      border-color: #444;
+      border-color: $border-color-dark;
     }
   }
 
@@ -128,20 +125,20 @@ code {
 table td,
 table th {
   padding: 0.6rem 1.6rem;
-  border-color: #ddd;
+  border-color: $border-color;
   border-width: 1px;
 
   @include dark-mode {
-    border-color: #444;
+    border-color: $border-color-dark;
   }
 }
 
 hr {
   border: none;
-  border-top: 1px solid #ddd;
+  border-top: 1px solid $border-color;
 
   @include dark-mode {
-    border-top-color: #444;
+    border-top-color: $border-color-dark;
   }
 }
 
