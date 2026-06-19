@@ -4,6 +4,11 @@
 // partial — the same mechanism as the project images.
 $mono-font-family: "Fantasque Sans Mono", monospace;
 
+// Standard hairline border — dividers, table cells, image frames. The dark
+// value is used inside @include dark-mode.
+$border-color: #ddd;
+$border-color-dark: #444;
+
 @mixin desktop {
   @media only screen and (max-width: "1365px") {
     @content;
