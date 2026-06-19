@@ -10,10 +10,10 @@ years:
 image:
   path: "projects/2006-uva-telephony/header.jpg"
   attribution:
-    title: "Long Distance Telephone Switchboard - Sears Roebuck Chicago ILL 1906"
-    creator: "rich701"
-    license: "CC BY 2.0"
-    source: "https://www.flickr.com/photos/63490482@N03/6043430467"
+    title: "Vintage telephone on the wall"
+    creator: "Pavan Trikutam"
+    license: "CC0 1.0"
+    source: "https://commons.wikimedia.org/wiki/File:Vintage_telephone_on_the_wall._(Unsplash).jpg"
 tags: ["telephony", "hardware", "C", "Python", "scalability", "web"]
 weight: 10
 ---

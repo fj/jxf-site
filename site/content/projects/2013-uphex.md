@@ -9,8 +9,10 @@ years:
 image:
   path: "projects/2013-uphex/header.jpg"
   attribution:
-    title: "Graphs of performance analytics on a laptop screen"
-    creator: "Luke Chesser"
+    title: "Statistics on a laptop"
+    creator: "Carlos Muza"
+    license: "CC0 1.0"
+    source: "https://commons.wikimedia.org/wiki/File:Statistics_on_a_laptop_(Unsplash).jpg"
 tags: ["statistics", "Ruby", "Python", "Node", "Docker", "Go", "scalability", "web"]
 weight: 1
 ---
