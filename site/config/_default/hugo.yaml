@@ -12,6 +12,13 @@ taxonomies:
 
 markup:
   goldmark:
+    parser:
+      # Allow Markdown attributes (e.g. {.half-width}) on block elements, and
+      # emit standalone images directly so the image render hook can wrap them
+      # in a <figure> instead of a <p>.
+      attribute:
+        block: true
+      wrapStandAloneImageWithinParagraph: false
     renderer:
       unsafe: true
     extensions:

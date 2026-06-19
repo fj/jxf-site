@@ -90,6 +90,36 @@ h2, h3, h4, h5, h6 {
     margin-top: 0;
     padding-top: 0;
   }
+
+  // A half-width figure floats to the right at half the column width so
+  // that body text wraps around it. Add the {.half-width} attribute to a
+  // standalone Markdown image (or class="half-width" to a figure). On mobile
+  // it reverts to the standard full-width figure treatment defined above.
+  figure.half-width {
+    float: right;
+    width: 50%;
+    margin: 0.6rem 0 1.5rem 2.5rem;
+    border-top: none;
+    padding-top: 0;
+
+    @include mobile {
+      float: none;
+      width: auto;
+      margin: 2rem 0;
+      border-top: 1px solid $border-color;
+      padding-top: 1.5rem;
+
+      @include dark-mode {
+        border-top-color: $border-color-dark;
+      }
+    }
+  }
+
+  // Headings clear any floated figure so a new section always begins below
+  // it rather than alongside it.
+  h2, h3, h4, h5, h6 {
+    clear: both;
+  }
 }
 
 kbd {

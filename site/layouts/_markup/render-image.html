@@ -1,0 +1,25 @@
+{{- /* Standalone (block) images render as a semantic <figure>. The image's
+       title becomes the caption, and Markdown attributes add classes, so a
+       half-width, right-floated figure can be written in pure Markdown:
+
+         ![Alt text](photo.jpg "A caption.")
+         {.half-width}
+
+       Inline images render as a bare <img>. This relies on two parser options
+       set in hugo.yaml: attribute.block (for the {.class} syntax) and
+       wrapStandAloneImageWithinParagraph=false (so the <figure> isn't nested
+       inside a <p>). */ -}}
+{{- /* Resolve page-bundle resources to their permalink; leave external and
+       site-absolute URLs untouched. */ -}}
+{{- $src := .Destination -}}
+{{- with .PageInner.Resources.Get .Destination }}{{ $src = .RelPermalink }}{{ end -}}
+{{- if .IsBlock -}}
+<figure{{ with .Attributes.class }} class="{{ . }}"{{ end }}>
+  <img src="{{ $src | safeURL }}" alt="{{ .PlainText }}">
+  {{- with .Title }}
+  <figcaption><p>{{ . | $.Page.RenderString }}</p></figcaption>
+  {{- end }}
+</figure>
+{{- else -}}
+<img src="{{ $src | safeURL }}" alt="{{ .PlainText }}">
+{{- end -}}
