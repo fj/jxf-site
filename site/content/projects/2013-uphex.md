@@ -18,10 +18,8 @@ tags: ["statistics", "Ruby", "Python", "Node", "Docker", "Go", "scalability", "w
 weight: 1
 ---
 
-[UpHex](https://uphex.com) is a SaaS platform that makes it dramatically easier for marketing agencies to launch and manage paid advertising for their clients. Native ad platforms like Facebook/Meta and Google Ads are powerful but punishingly complex, and most agencies burn enormous amounts of time wrestling with them one account at a time. My cofounder, Bradley, and I started UpHex because we were convinced that agencies deserved a faster, simpler way to help the businesses they serve.
+[UpHex](https://uphex.com) is a SaaS platform that makes it dramatically easier for marketing agencies to launch and manage paid advertising for their clients. Native ad platforms like Facebook/Meta and Google Ads are powerful but punishingly complex, and most agencies burn enormous amounts of time wrestling with them one account at a time. My cofounder Bradley and I started UpHex because we were convinced that agencies deserved a faster, simpler way to help the businesses they serve, and I took the CTO role to lead our engineering.
 
 The core idea is to make it trivial to build a campaign once and deploy it everywhere. Once an agency creates a successful ad template a single time, UpHex lets them roll it out across dozens or hundreds of client accounts in just a few clicks, going from zero to launch in minutes. On top of that foundation we layered AI-powered tools that write ad copy, generate image and video creative, and suggest angles and targeting. We also manage landing pages and lead-capture forms, provide live campaign management for budgets and performance, and allow for deep integration with the GoHighLevel CRM and other surfaces. Together, this lets agencies offer cutting-edge advertising directly to clients from inside the tools they already use. Each agency employee thus becomes much higher leverage than they were before.
 
-UpHex was acquired in 2019
-
-I don't have a formal title other than cofounder, since UpHex isn't really big enough to stand on ceremony. But I act as the de facto CTO -- hiring and managing our engineering talent, setting the technical direction for the company, and making the big architectural choices that I think set us up for success. Most importantly, I get my hands dirty on a day-to-day basis, and I absolutely love it. Today UpHex powers advertising for agencies of every size, from solo operators to teams running campaigns across hundreds of clients.
+UpHex was acquired in 2019 for an undisclosed sum.
