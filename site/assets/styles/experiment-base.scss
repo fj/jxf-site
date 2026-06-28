@@ -1,0 +1,52 @@
+// Baseline for any embedded experiment.
+//
+// Experiments mount into the page's own <body>, so they inherit the host theme
+// — including aggressive typographic defaults like body { line-height: 1.8em }
+// that leave compact UIs looking loosely spaced. This establishes a clean
+// canvas on the shared .experiment-embed wrapper (added by the embed partial to
+// every experiment) so individual experiments don't each have to re-fix the
+// same inherited host styles.
+//
+// It's host-owned on purpose: it counteracts *this site's* theme and sets *this
+// site's* layout policy for experiments, so the knowledge lives with the host
+// and experiments stay host-agnostic. When the theme leaks a new inherited
+// property, neutralize it here, once.
+.experiment-embed {
+  line-height: 1.4;
+
+  // Base text size for the experiment UI. Expressed in em so it tracks the
+  // site's body text (experiments use em internally and scale from this), so
+  // the interface reads at the same size as the surrounding prose rather than
+  // the tiny root-relative default.
+  font-size: 1em;
+
+  // The embed's outer box geometry is the host's concern, not the experiment's
+  // (the experiment owns only what's *inside* the mount). Set as longhands so an
+  // experiment's own root `margin` shorthand can't silently zero margin-left and
+  // break the centering below.
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+
+  // Experiments earn a more generous width than the reading column — 180% of
+  // it, centered and broken out of the post column, but capped at the viewport
+  // so it never causes horizontal scroll. The margin moves the actual box
+  // (rather than a transform), so there's no leftover overflow on one side. The
+  // explanatory prose above keeps a comfortable reading width.
+  // (Interpolated so the SCSS transpiler emits the CSS min()/calc() verbatim
+  // instead of trying to evaluate them at compile time.)
+  width: #{"min(180%, 96vw)"};
+  margin-left: #{"calc(50% - min(90%, 48vw))"};
+
+  &,
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  // On narrow screens there's no room to break out; align with the column.
+  @media only screen and (max-width: 768px) {
+    width: 100%;
+    margin-left: 0;
+  }
+}

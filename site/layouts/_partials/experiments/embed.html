@@ -1,0 +1,70 @@
+{{- /*
+  Generic experiment embedder.
+
+  The argument is an experiment name. This reads experiments/<name>/manifest.yaml
+  — the experiment's own declaration of its mount element, stylesheets,
+  third-party dependencies, and scripts — and assembles the page from it:
+  compile + link styles, fetch each declared dependency at build time (verifying
+  the pinned SRI) and serve it self-hosted, then load the local scripts in order.
+  The host hardcodes nothing about any specific experiment.
+
+  Usage: {{ partial "experiments/embed.html" "llm-explorer" }}
+*/ -}}
+{{- $name := . -}}
+{{- $dir := printf "experiments/%s" $name -}}
+{{- $m := resources.Get (printf "%s/manifest.yaml" $dir) | transform.Unmarshal -}}
+
+{{- /* Host baseline: a clean canvas (neutralizes inherited theme styles) shared
+       by every experiment, so individual experiments don't re-fix them. Linked
+       first so an experiment's own styles can still override it. */ -}}
+{{- $base := resources.Get "styles/experiment-base.scss" | toCSS -}}
+{{- if hugo.IsServer -}}
+  <link rel="stylesheet" href="{{ $base.RelPermalink }}" media="screen">
+{{- else -}}
+  {{- $base = $base | minify | fingerprint -}}
+  <link rel="stylesheet" href="{{ $base.RelPermalink }}" integrity="{{ $base.Data.Integrity }}" crossorigin="anonymous" media="screen">
+{{- end -}}
+
+{{- /* Stylesheets — compile .scss; fingerprint in production builds. */ -}}
+{{- range $m.styles -}}
+  {{- $res := resources.Get (printf "%s/%s" $dir .) -}}
+  {{- if strings.HasSuffix . ".scss" }}{{ $res = $res | toCSS }}{{ end -}}
+  {{- if hugo.IsServer -}}
+    <link rel="stylesheet" href="{{ $res.RelPermalink }}" media="screen">
+  {{- else -}}
+    {{- $res = $res | minify | fingerprint -}}
+    <link rel="stylesheet" href="{{ $res.RelPermalink }}" integrity="{{ $res.Data.Integrity }}" crossorigin="anonymous" media="screen">
+  {{- end -}}
+{{- end -}}
+
+<noscript><p class="experiment-noscript">This experiment needs JavaScript enabled.</p></noscript>
+{{- /* Mount element: the app builds itself into this. The shared `experiment-embed`
+       class carries the host baseline (clean canvas + generous width); the
+       `{{ $m.mount }}` class carries this experiment's own styles (convention:
+       mount id == that class). */ -}}
+<div id="{{ $m.mount }}" class="experiment-embed {{ $m.mount }}" data-experiment="{{ $name }}"></div>
+
+{{- /* Third-party dependencies — fetched at build time, SRI-verified, served
+       self-hosted (no runtime CDN dependency). Loaded before local scripts. */ -}}
+{{- range $m.dependencies -}}
+  {{- $url := .url -}}
+  {{- $want := .integrity -}}
+  {{- $dep := "" -}}
+  {{- with try (resources.GetRemote $url) -}}
+    {{- with .Err }}{{ errorf "experiment %q: fetching %s failed: %s" $name $url . }}{{ else }}{{ $dep = .Value }}{{ end -}}
+  {{- end -}}
+  {{- $dep = $dep | fingerprint "sha256" -}}
+  {{- if $want }}{{ if ne $dep.Data.Integrity $want }}{{ errorf "experiment %q: integrity mismatch for %s (manifest %q, built %q)" $name $url $want $dep.Data.Integrity }}{{ end }}{{ end -}}
+  <script src="{{ $dep.RelPermalink }}" integrity="{{ $dep.Data.Integrity }}" crossorigin="anonymous"></script>
+{{- end -}}
+
+{{- /* Local scripts — in declared order (app entry last). */ -}}
+{{- range $m.scripts -}}
+  {{- $res := resources.Get (printf "%s/%s" $dir .) -}}
+  {{- if hugo.IsServer -}}
+    <script src="{{ $res.RelPermalink }}"></script>
+  {{- else -}}
+    {{- $res = $res | minify | fingerprint -}}
+    <script src="{{ $res.RelPermalink }}" integrity="{{ $res.Data.Integrity }}" crossorigin="anonymous"></script>
+  {{- end -}}
+{{- end -}}
