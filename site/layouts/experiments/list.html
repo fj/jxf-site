@@ -1,0 +1,23 @@
+{{ define "title" }}
+  {{ .Title }} · {{ .Site.Title }}
+{{ end }}
+{{ define "content" }}
+  <section class="container list experiments-list">
+    <header>
+      <h1 class="title">
+        <a class="title-link" href="{{ .Permalink | safeURL }}">{{ .Title }}</a>
+      </h1>
+    </header>
+    {{ .Content }}
+    <ul class="experiments">
+      {{ range sort .Pages "Params.weight" }}
+      <li class="experiment">
+        <a class="experiment-title" href="{{ .RelPermalink }}">{{ .Title }}</a>
+        {{ with .Params.summary | default .Params.description }}
+        <p class="experiment-description">{{ . }}</p>
+        {{ end }}
+      </li>
+      {{ end }}
+    </ul>
+  </section>
+{{ end }}

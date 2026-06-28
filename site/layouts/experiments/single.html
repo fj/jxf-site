@@ -1,0 +1,35 @@
+{{ define "title" }}
+  {{ .Title }} · {{ .Site.Title }}
+{{ end }}
+{{ define "content" }}
+  <section class="container entry experiment">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">
+            <a class="title-link" href="{{ .Permalink | safeURL }}">{{ .Title }}</a>
+          </h1>
+        </div>
+        <div class="post-meta">
+          {{ with .Date }}
+          <div class="date">
+            <span class="posted-on">
+              {{ partial "icon.html" "calendar" }}
+              <time datetime="{{ .Format "2006-01-02" }}">{{ .Format "January 2, 2006" }}</time>
+            </span>
+          </div>
+          {{ end }}
+        </div>
+      </header>
+
+      <div class="post-content">
+        {{ .Content }}
+        {{ with .Params.experiment }}
+          {{ partial "experiments/embed.html" . }}
+        {{ end }}
+      </div>
+    </article>
+
+    {{ partial "posts/math.html" . }}
+  </section>
+{{ end }}
