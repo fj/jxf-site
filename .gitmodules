@@ -1,3 +1,6 @@
 [submodule "site/themes/hugo-coder"]
 	path = site/themes/hugo-coder
 	url = https://github.com/fj/hugo-coder.git
+[submodule "site/assets/experiments"]
+	path = site/assets/experiments
+	url = https://github.com/fj/jxf-experiments.git
