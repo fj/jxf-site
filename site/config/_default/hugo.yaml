@@ -4,6 +4,15 @@ title: "{ jxf }"
 
 theme: "hugo-coder"
 
+# Hugo's built-in media type table covers font/ttf and font/otf but not the
+# woff formats, so build-time fetches of webfonts (an experiment manifest's
+# `fonts:` section) can't resolve their media type without these entries.
+mediaTypes:
+  "font/woff2":
+    suffixes: ["woff2"]
+  "font/woff":
+    suffixes: ["woff"]
+
 taxonomies:
   tag: "tags"
   category: "categories"
