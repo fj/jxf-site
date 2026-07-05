@@ -3,4 +3,4 @@
 	url = https://github.com/fj/hugo-coder.git
 [submodule "site/assets/experiments"]
 	path = site/assets/experiments
-	url = https://github.com/fj/jxf-experiments.git
+	url = https://github.com/fj/jxf-site-experiments.git
