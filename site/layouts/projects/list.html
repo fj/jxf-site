@@ -12,7 +12,8 @@
     </header>
     {{ .Content }}
     <ul class="projects">
-      {{ range sort .Pages "Params.years.start" "desc" }}
+      {{/* Sort by end year desc, then start year desc, then weight asc. Hugo's sort is stable and single-key, so apply the keys least-significant first. */}}
+      {{ range sort (sort (sort .Pages "Weight") "Params.years.start" "desc") "Params.years.end" "desc" }}
       <li class="project">
         {{ $permalink := .RelPermalink }}
         {{ with .Params.image }}
