@@ -2,11 +2,11 @@
   Generic experiment embedder.
 
   The argument is an experiment name. This reads experiments/<name>/manifest.yaml
-  — the experiment's own declaration of its mount element, stylesheets,
-  third-party dependencies, and scripts — and assembles the page from it:
-  compile + link styles, fetch each declared dependency at build time (verifying
-  the pinned SRI) and serve it self-hosted, then load the local scripts in order.
-  The host hardcodes nothing about any specific experiment.
+  — the experiment's own declaration of its mount element, stylesheets, web
+  fonts, third-party dependencies, and scripts — and assembles the page from it:
+  compile + link styles, fetch each declared font and dependency at build time
+  (verifying the pinned SRI) and serve it self-hosted, then load the local
+  scripts in order. The host hardcodes nothing about any specific experiment.
 
   Usage: {{ partial "experiments/embed.html" "llm-explorer" }}
 */ -}}
@@ -35,6 +35,22 @@
     {{- $res = $res | minify | fingerprint -}}
     <link rel="stylesheet" href="{{ $res.RelPermalink }}" integrity="{{ $res.Data.Integrity }}" crossorigin="anonymous" media="screen">
   {{- end -}}
+{{- end -}}
+
+{{- /* Web fonts — treated like third-party script dependencies: fetched at
+       build time, SRI-verified against the manifest's pin, and served
+       self-hosted via @font-face so both the experiment's CSS and its canvas
+       can use them. */ -}}
+{{- range $m.fonts -}}
+  {{- $url := .url -}}
+  {{- $want := .integrity -}}
+  {{- $font := "" -}}
+  {{- with try (resources.GetRemote $url) -}}
+    {{- with .Err }}{{ errorf "experiment %q: fetching font %s failed: %s" $name $url . }}{{ else }}{{ $font = .Value }}{{ end -}}
+  {{- end -}}
+  {{- $font = $font | fingerprint "sha256" -}}
+  {{- if $want }}{{ if ne $font.Data.Integrity $want }}{{ errorf "experiment %q: integrity mismatch for %s (manifest %q, built %q)" $name $url $want $font.Data.Integrity }}{{ end }}{{ end -}}
+  <style>{{ printf "@font-face { font-family: %q; font-style: %s; font-weight: %v; font-display: swap; src: url(%s) format(%q); }" .family (.style | default "normal") (.weight | default 400) $font.RelPermalink "woff2" | safeCSS }}</style>
 {{- end -}}
 
 <noscript><p class="experiment-noscript">This experiment needs JavaScript enabled.</p></noscript>
