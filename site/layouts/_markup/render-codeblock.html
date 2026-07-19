@@ -1,0 +1,8 @@
+{{- $result := transform.HighlightCodeBlock . -}}
+<div class="code-block">
+  <button class="code-copy" type="button" aria-label="Copy code" title="Copy code">
+    <span class="code-copy-icon code-copy-icon-copy">{{ partial "icon.html" (dict "name" "copy" "size" "18") }}</span>
+    <span class="code-copy-icon code-copy-icon-check">{{ partial "icon.html" (dict "name" "check" "size" "18") }}</span>
+  </button>
+  {{ $result.Wrapped }}
+</div>
