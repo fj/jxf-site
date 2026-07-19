@@ -6,6 +6,7 @@ assets:
   remoteBaseURL: "https://storage.googleapis.com/site-assets.jxf.me"
 customJS:
   - "js/sidenotes.js"
+  - "js/copy-code.js"
 customizations:
   styles:
     - "styles/base.scss"
