@@ -12,6 +12,13 @@ vars:
   RESOURCES_PATH: "{{.SOURCE_PATH}}/resources"
   ASSETS_LOCAL_PATH: "{{.PROJECT_ROOT}}/site/assets"
   ASSETS_REMOTE_PATH: "gs://site-assets.jxf.me"
+  # The only subtrees of site/assets that belong in the bucket: the gitignored
+  # binaries that `asset.html` resolves against params.assets.remoteBaseURL in
+  # production. Everything else under assets/ (js/, scss/, styles/, experiments/)
+  # is source in version control that Hugo Pipes compiles, fingerprints, and
+  # publishes into the build output, so the bucket never serves it. Keep this
+  # list in agreement with the corresponding block in .gitignore.
+  ASSETS_REMOTE_DIRS: "fonts images posts projects"
 
 tasks:
 
@@ -48,14 +55,48 @@ tasks:
            {{.FONTS_PATH}}/
         cp "$tmp"/LICENSE.txt {{.FONTS_PATH}}/FantasqueSansMono-LICENSE.txt
 
-  # Assets live in GCS. `gcloud storage rsync` is additive by default (no
-  # deletes unless asked) and supports a dry run. Auth is ambient: the tasks
-  # use whatever gcloud account is active, so the same command works
-  # interactively (after `gcloud auth login`) and in CI (after
+  # ASSETS_REMOTE_DIRS and the .gitignore block naming the same trees are two
+  # hand-maintained lists, and `assets:sync:prune:hard` deletes bucket prefixes
+  # based on the first one — so rather than trust a comment to keep them aligned,
+  # derive the truth from git and fail on drift in either direction. A gitignored
+  # tree missing from the list would silently never reach the bucket (production
+  # 404s, and prune would delete it if it got there another way); a listed tree
+  # that isn't gitignored is version-controlled source the sync would publish.
+  "assets:sync:_check":
+    internal: true
+    cmds:
+      - |-
+        drift=""
+        for dir in {{.ASSETS_REMOTE_DIRS}}; do
+          if ! git -C "{{.PROJECT_ROOT}}" check-ignore -q "{{.ASSETS_LOCAL_PATH}}/$dir"; then
+            drift="$drift\n    $dir: in ASSETS_REMOTE_DIRS but not gitignored (syncing it would publish version-controlled source)"
+          fi
+        done
+        for path in {{.ASSETS_LOCAL_PATH}}/*/; do
+          dir="$(basename "$path")"
+          git -C "{{.PROJECT_ROOT}}" check-ignore -q "$path" || continue
+          case " {{.ASSETS_REMOTE_DIRS}} " in
+            *" $dir "*) continue ;;
+          esac
+          drift="$drift\n    $dir: gitignored but not in ASSETS_REMOTE_DIRS (it will never reach the bucket)"
+        done
+        if [ -n "$drift" ]; then
+          printf '==> assets: .gitignore and ASSETS_REMOTE_DIRS disagree:%b\n' "$drift" >&2
+          echo "    reconcile them in .gitignore and Taskfile.yml before syncing" >&2
+          exit 1
+        fi
+
+  # Assets live in GCS, one bucket prefix per entry in ASSETS_REMOTE_DIRS —
+  # syncing site/assets wholesale would push (and, coming back down, overwrite)
+  # the version-controlled sources that share that tree. `gcloud storage rsync`
+  # is additive by default (no deletes unless asked) and supports a dry run.
+  # Auth is ambient: the tasks use whatever gcloud account is active, so the same
+  # command works interactively (after `gcloud auth login`) and in CI (after
   # `gcloud auth activate-service-account --key-file=...`, or a Workload
   # Identity Federation step). The precondition fails fast if neither is set up.
   "assets:sync:up*":
     desc: "sync assets up to cloud storage (use :up:hard to bypass dry run)"
+    deps: ["assets:sync:_check"]
     vars:
       q: "{{index .MATCH 0}}"
     preconditions:
@@ -63,11 +104,24 @@ tasks:
         msg: "no active gcloud account; run 'gcloud auth login' or 'gcloud auth activate-service-account --key-file=...'"
     cmds:
       - |-
-        gcloud storage rsync --recursive {{if ne .q ":hard"}}--dry-run{{ end }} \
-        {{.ASSETS_LOCAL_PATH}} {{.ASSETS_REMOTE_PATH}}
+        for dir in {{.ASSETS_REMOTE_DIRS}}; do
+          local_dir="{{.ASSETS_LOCAL_PATH}}/$dir"
+          if [ ! -d "$local_dir" ]; then
+            echo "==> assets:sync:up: skipping $dir (nothing local to push)"
+            continue
+          fi
+          echo "==> assets:sync:up: $dir"
+          gcloud storage rsync --recursive {{if ne .q ":hard"}}--dry-run{{ end }} \
+            "$local_dir" "{{.ASSETS_REMOTE_PATH}}/$dir"
+        done
 
+  # A tree absent from the bucket is skipped rather than treated as an error, but
+  # that decision comes from one listing of the bucket root: probing each prefix
+  # separately would report an expired token or a network blip as "not in the
+  # bucket" and exit 0 having downloaded nothing.
   "assets:sync:down*":
     desc: "sync assets down to local environment (use :down:hard to bypass dry run)"
+    deps: ["assets:sync:_check"]
     vars:
       q: "{{index .MATCH 0}}"
     preconditions:
@@ -75,8 +129,63 @@ tasks:
         msg: "no active gcloud account; run 'gcloud auth login' or 'gcloud auth activate-service-account --key-file=...'"
     cmds:
       - |-
-        gcloud storage rsync --recursive {{if ne .q ":hard"}}--dry-run{{ end }} \
-        {{.ASSETS_REMOTE_PATH}} {{.ASSETS_LOCAL_PATH}}
+        if ! bucket_root="$(gcloud storage ls "{{.ASSETS_REMOTE_PATH}}/")"; then
+          echo "==> assets:sync:down: cannot list {{.ASSETS_REMOTE_PATH}}" >&2
+          exit 1
+        fi
+        for dir in {{.ASSETS_REMOTE_DIRS}}; do
+          remote_dir="{{.ASSETS_REMOTE_PATH}}/$dir"
+          case "$bucket_root" in
+            *"$remote_dir/"*) ;;
+            *)
+              echo "==> assets:sync:down: skipping $dir (not in the bucket)"
+              continue
+              ;;
+          esac
+          echo "==> assets:sync:down: $dir"
+          mkdir -p "{{.ASSETS_LOCAL_PATH}}/$dir"
+          gcloud storage rsync --recursive {{if ne .q ":hard"}}--dry-run{{ end }} \
+            "$remote_dir" "{{.ASSETS_LOCAL_PATH}}/$dir"
+        done
+
+  # The up-sync used to mirror all of site/assets, so the bucket still holds
+  # source trees the site never fetches from it. This removes everything at the
+  # bucket root outside ASSETS_REMOTE_DIRS. `gcloud storage rm` has no dry run of
+  # its own, so this task reports what it would delete and deletes nothing until
+  # :hard.
+  "assets:sync:prune*":
+    desc: "delete bucket entries outside the synced asset trees (use :prune:hard to bypass dry run)"
+    deps: ["assets:sync:_check"]
+    vars:
+      q: "{{index .MATCH 0}}"
+    preconditions:
+      - sh: gcloud auth list --filter=status:ACTIVE --format="value(account)" | grep -q .
+        msg: "no active gcloud account; run 'gcloud auth login' or 'gcloud auth activate-service-account --key-file=...'"
+    cmds:
+      - |-
+        if ! bucket_root="$(gcloud storage ls "{{.ASSETS_REMOTE_PATH}}/")"; then
+          echo "==> assets:sync:prune: cannot list {{.ASSETS_REMOTE_PATH}}" >&2
+          exit 1
+        fi
+        echo "==> assets:sync:prune: keeping {{.ASSETS_REMOTE_DIRS}}"
+        while IFS= read -r entry; do
+          [ -n "$entry" ] || continue
+          name="${entry#{{.ASSETS_REMOTE_PATH}}/}"
+          case " {{.ASSETS_REMOTE_DIRS}} " in
+            *" ${name%/} "*) continue ;;
+          esac
+          if [ "{{.q}}" != ":hard" ]; then
+            echo "    would remove $entry"
+            continue
+          fi
+          echo "    removing $entry"
+          case "$entry" in
+            */) gcloud storage rm --recursive "$entry" ;;
+            *)  gcloud storage rm "$entry" ;;
+          esac
+        done <<BUCKET_ROOT
+        $bucket_root
+        BUCKET_ROOT
 
   # Webfonts are served from the bucket but, unlike <img>, fonts are always
   # fetched in CORS mode, so the bucket must send Access-Control-Allow-Origin.
