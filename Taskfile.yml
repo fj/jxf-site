@@ -115,6 +115,44 @@ tasks:
             "$remote_dir" "{{.ASSETS_LOCAL_PATH}}/$dir"
         done
 
+  # The up-sync used to mirror all of site/assets, so the bucket still holds
+  # source trees the site never fetches from it. This removes everything at the
+  # bucket root outside ASSETS_REMOTE_DIRS. `gcloud storage rm` has no dry run of
+  # its own, so this task reports what it would delete and deletes nothing until
+  # :hard.
+  "assets:sync:prune*":
+    desc: "delete bucket entries outside the synced asset trees (use :prune:hard to bypass dry run)"
+    vars:
+      q: "{{index .MATCH 0}}"
+    preconditions:
+      - sh: gcloud auth list --filter=status:ACTIVE --format="value(account)" | grep -q .
+        msg: "no active gcloud account; run 'gcloud auth login' or 'gcloud auth activate-service-account --key-file=...'"
+    cmds:
+      - |-
+        if ! bucket_root="$(gcloud storage ls "{{.ASSETS_REMOTE_PATH}}/")"; then
+          echo "==> assets:sync:prune: cannot list {{.ASSETS_REMOTE_PATH}}" >&2
+          exit 1
+        fi
+        echo "==> assets:sync:prune: keeping {{.ASSETS_REMOTE_DIRS}}"
+        while IFS= read -r entry; do
+          [ -n "$entry" ] || continue
+          name="${entry#{{.ASSETS_REMOTE_PATH}}/}"
+          case " {{.ASSETS_REMOTE_DIRS}} " in
+            *" ${name%/} "*) continue ;;
+          esac
+          if [ "{{.q}}" != ":hard" ]; then
+            echo "    would remove $entry"
+            continue
+          fi
+          echo "    removing $entry"
+          case "$entry" in
+            */) gcloud storage rm --recursive "$entry" ;;
+            *)  gcloud storage rm "$entry" ;;
+          esac
+        done <<BUCKET_ROOT
+        $bucket_root
+        BUCKET_ROOT
+
   # Webfonts are served from the bucket but, unlike <img>, fonts are always
   # fetched in CORS mode, so the bucket must send Access-Control-Allow-Origin.
   # Re-run after (re)creating the bucket. Auth is ambient, like the sync tasks.
