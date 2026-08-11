@@ -1,8 +1,13 @@
 {{- $result := transform.HighlightCodeBlock . -}}
 <div class="code-block">
-  <button class="code-copy" type="button" aria-label="Copy code" title="Copy code">
+  <button class="code-copy" type="button" aria-label="Copy code">
     <span class="code-copy-icon code-copy-icon-copy">{{ partial "icon.html" (dict "name" "copy" "size" "18") }}</span>
     <span class="code-copy-icon code-copy-icon-check">{{ partial "icon.html" (dict "name" "check" "size" "18") }}</span>
+    {{/* The bubble replaces the native title tooltip, which is too slow to
+         appear and can't be styled or shown as click feedback. It is
+         aria-hidden because the button's aria-label already carries the
+         same wording. */}}
+    <span class="code-copy-tooltip" aria-hidden="true">Copy</span>
   </button>
   {{ $result.Wrapped }}
 </div>
