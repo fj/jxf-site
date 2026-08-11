@@ -11,7 +11,18 @@ series: ["Reference Posts"]
 math: true
 ---
 
-This post is a comprehensive reference that exercises every content feature available on this site: prose and typography, quotations and callouts, images and figures, mathematics and notation, interactive elements, and sidenotes. It serves as both a visual regression test and a living style guide.
+This post is a comprehensive reference that exercises every content feature available on this site, particularly the ones that go beyond basic Markdown:
+
+* typography
+* quotations
+* callouts
+* images
+* figures
+* math notation
+* interactive elements
+* sidenotes
+
+It serves as both a visual regression test and a living style guide, and I use it to occasionally check that I didn't do anything stupid or break things.
 
 Here is a second paragraph to demonstrate paragraph spacing. Good typography creates a comfortable reading rhythm. The space between paragraphs, the line height within them, and the measure (line length) all contribute to readability. A well-set paragraph invites the reader forward.
 
