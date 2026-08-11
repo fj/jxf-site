@@ -7,16 +7,8 @@ weight: 2
 experiment: "quote-card"
 ---
 
-Sometimes a quote deserves better than a screenshot of a text file. This tool
-turns a few lines of **Markdown** &mdash; bold, italics, inline `code` &mdash;
-into a finished PNG: pick a font, wrap it in a border (solid, dashed, dotted,
-double, or wavy), style the attribution separately, tune the colors and shadow,
-and download the result. If sliders feel indirect, every styling group has an
-advanced mode (the &#129489;&#8205;&#128187; button) that lets you edit that
-part of the card as plain CSS &mdash; including things the sliders can't
-express, like any font on your system or a `transform`.
+Sometimes I find myself wanting to excerpt an interesting paragraph, snippet, or quote. This tool turns a few lines of Markdown and turns it into a finished PNG.
 
-Everything happens in your browser. The preview canvas *is* the output bitmap
-at the resolution you choose &mdash; sized for a Bluesky feed image by default,
-or anything up to 4096&thinsp;&times;&thinsp;4096 &mdash; so what you see is
-pixel-for-pixel what you download. Nothing you type ever leaves the page.
+If sliders feel indirect, every styling group has an advanced mode (the &#129489;&#8205;&#128187; button) that lets you edit that part of the card as plain CSS &mdash; including things the sliders can't express, like any system font or a CSS `transform`.
+
+Everything happens in your browser. The preview canvas *is* the output bitmap at the resolution you choose &mdash; sized for a Bluesky feed image by default, or anything up to 4096&thinsp;&times;&thinsp;4096 &mdash; so what you see is pixel-for-pixel what you download.
