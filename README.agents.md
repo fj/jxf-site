@@ -34,7 +34,7 @@ be created via `task new-post`.
     ├── archetypes/
     │   └── posts.md    Front-matter template for `task new-post`
     ├── assets/
-    │   ├── images/     Binary images (gitignored — synced from S3)
+    │   ├── images/     Binary images (gitignored — synced from GCS)
     │   └── styles/     SCSS pipeline
     │       ├── base.scss     Entry point (referenced from config/_default/params.yaml)
     │       ├── common.scss   Responsive breakpoint mixins
@@ -127,14 +127,27 @@ Two distinct asset flows:
    - **Server mode** (`hugo server`): `toCSS` with sourcemaps, no fingerprint.
    - **Build mode**: `toCSS | minify | fingerprint` with SRI integrity hashes.
 
-2. **Images** — `site/assets/images/` is **gitignored**. Images are stored
-   in S3 (`s3://site-assets.jxf.me`) and synced via Taskfile:
-   - `task sync:down` (dry-run) / `task sync:down:hard` (actual)
-   - `task sync:up`   (dry-run) / `task sync:up:hard`   (actual)
+2. **Binaries** — the gitignored trees `site/assets/{fonts,images,posts,projects}/`
+   are stored in GCS (`gs://site-assets.jxf.me`) and synced via Taskfile:
+   - `task assets:sync:down` (dry-run) / `task assets:sync:down:hard` (actual)
+   - `task assets:sync:up`   (dry-run) / `task assets:sync:up:hard`   (actual)
+   - `task assets:sync:prune` (dry-run) / `:prune:hard` — delete bucket entries
+     outside those trees
 
-   AWS credentials come from the `jxf-site` AWS CLI profile, or from
-   `SECRETS_AWS_ACCESS_KEY_ID` / `SECRETS_AWS_SECRET_ACCESS_KEY` env vars
-   (the form Netlify exposes — see `deploy.sh`).
+   That list is `ASSETS_REMOTE_DIRS` in `Taskfile.yml`, and it must stay in
+   agreement with the gitignore block naming the same paths — all three tasks
+   depend on `assets:sync:_check`, which derives the truth from `git
+   check-ignore` and refuses to sync on drift in either direction. The sync is
+   deliberately per-tree rather than over `site/assets` as a whole: the rest of
+   that tree (`js/`, `scss/`, `styles/`, `experiments/`) is version-controlled
+   source that Hugo Pipes compiles into the build output, so pushing it to the
+   bucket publishes files nothing fetches — and pulling it back down would
+   clobber the working copy with stale ones.
+
+   Auth is ambient: whatever `gcloud` account is active, so the same commands
+   work interactively (`gcloud auth login`) and in CI
+   (`gcloud auth activate-service-account`). A precondition fails fast if
+   neither is set up.
 
    The avatar URL in `config/_default/params.yaml` is hardcoded to a public S3 URL
    (`https://s3.amazonaws.com/assets.jxf.me/images/jf.jpeg`) — see the
@@ -152,8 +165,9 @@ All run from the repo root via [Task](https://taskfile.dev):
 | `task build`                  | Production build into `./out/`                            |
 | `task clean`                  | Remove `out/` and `site/resources/`                       |
 | `task new-post ITEM_NAME=foo` | Scaffold `site/content/posts/foo.md` from the archetype   |
-| `task sync:down` / `:down:hard` | Pull image assets from S3 (dry-run / actual)            |
-| `task sync:up`   / `:up:hard`   | Push image assets to S3 (dry-run / actual)              |
+| `task assets:sync:down` / `:down:hard` | Pull the bucket-backed asset trees from GCS (dry-run / actual) |
+| `task assets:sync:up`   / `:up:hard`   | Push the bucket-backed asset trees to GCS (dry-run / actual)  |
+| `task assets:sync:prune` / `:prune:hard` | Delete bucket entries outside those trees (dry-run / actual) |
 
 Direct Hugo invocation (when Task isn't appropriate):
 
@@ -198,10 +212,12 @@ is **done** — the legacy `site/config.yaml` was split into `hugo.yaml`,
   overrides for consistency with what's already here.
 - **No `content/` directory exists yet.** Don't assume sample posts are
   present; bootstrap with `task new-post` when you need one.
-- **`site/assets/images/` is gitignored.** Don't commit images to git;
-  push them to S3 with `task sync:up:hard`.
+- **`site/assets/{fonts,images,posts,projects}/` are gitignored.** Don't commit
+  binaries to git; push them to GCS with `task assets:sync:up:hard`. Adding a
+  new bucket-backed tree means updating both `.gitignore` and
+  `ASSETS_REMOTE_DIRS`, or the sync will silently skip it.
 - **Hugo extended is required** (SCSS). The standard build will fail on
   `base.scss`.
-- **Taskfile uses `{{.MATCH}}` wildcards** for `sync:up*` / `sync:down*`,
-  so `task sync:up:hard` and `task sync:up` are the same task with
-  different suffixes — `:hard` suppresses `--dryrun`.
+- **Taskfile uses `{{.MATCH}}` wildcards** for `assets:sync:up*` /
+  `assets:sync:down*`, so `task assets:sync:up:hard` and `task assets:sync:up`
+  are the same task with different suffixes — `:hard` suppresses `--dry-run`.
