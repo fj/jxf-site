@@ -55,6 +55,37 @@ tasks:
            {{.FONTS_PATH}}/
         cp "$tmp"/LICENSE.txt {{.FONTS_PATH}}/FantasqueSansMono-LICENSE.txt
 
+  # ASSETS_REMOTE_DIRS and the .gitignore block naming the same trees are two
+  # hand-maintained lists, and `assets:sync:prune:hard` deletes bucket prefixes
+  # based on the first one — so rather than trust a comment to keep them aligned,
+  # derive the truth from git and fail on drift in either direction. A gitignored
+  # tree missing from the list would silently never reach the bucket (production
+  # 404s, and prune would delete it if it got there another way); a listed tree
+  # that isn't gitignored is version-controlled source the sync would publish.
+  "assets:sync:_check":
+    internal: true
+    cmds:
+      - |-
+        drift=""
+        for dir in {{.ASSETS_REMOTE_DIRS}}; do
+          if ! git -C "{{.PROJECT_ROOT}}" check-ignore -q "{{.ASSETS_LOCAL_PATH}}/$dir"; then
+            drift="$drift\n    $dir: in ASSETS_REMOTE_DIRS but not gitignored (syncing it would publish version-controlled source)"
+          fi
+        done
+        for path in {{.ASSETS_LOCAL_PATH}}/*/; do
+          dir="$(basename "$path")"
+          git -C "{{.PROJECT_ROOT}}" check-ignore -q "$path" || continue
+          case " {{.ASSETS_REMOTE_DIRS}} " in
+            *" $dir "*) continue ;;
+          esac
+          drift="$drift\n    $dir: gitignored but not in ASSETS_REMOTE_DIRS (it will never reach the bucket)"
+        done
+        if [ -n "$drift" ]; then
+          printf '==> assets: .gitignore and ASSETS_REMOTE_DIRS disagree:%b\n' "$drift" >&2
+          echo "    reconcile them in .gitignore and Taskfile.yml before syncing" >&2
+          exit 1
+        fi
+
   # Assets live in GCS, one bucket prefix per entry in ASSETS_REMOTE_DIRS —
   # syncing site/assets wholesale would push (and, coming back down, overwrite)
   # the version-controlled sources that share that tree. `gcloud storage rsync`
@@ -65,6 +96,7 @@ tasks:
   # Identity Federation step). The precondition fails fast if neither is set up.
   "assets:sync:up*":
     desc: "sync assets up to cloud storage (use :up:hard to bypass dry run)"
+    deps: ["assets:sync:_check"]
     vars:
       q: "{{index .MATCH 0}}"
     preconditions:
@@ -89,6 +121,7 @@ tasks:
   # bucket" and exit 0 having downloaded nothing.
   "assets:sync:down*":
     desc: "sync assets down to local environment (use :down:hard to bypass dry run)"
+    deps: ["assets:sync:_check"]
     vars:
       q: "{{index .MATCH 0}}"
     preconditions:
@@ -122,6 +155,7 @@ tasks:
   # :hard.
   "assets:sync:prune*":
     desc: "delete bucket entries outside the synced asset trees (use :prune:hard to bypass dry run)"
+    deps: ["assets:sync:_check"]
     vars:
       q: "{{index .MATCH 0}}"
     preconditions:
