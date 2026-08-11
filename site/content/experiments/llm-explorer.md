@@ -8,7 +8,7 @@ experiment: "llm-explorer"
 ---
 
 Every language model sits somewhere on a trade-off between **how much it costs**
-and **how fast it answers** &mdash; and where it lands depends entirely on what
+and how fast it answers &mdash; and where it lands depends entirely on what
 you're asking it to do. A model that looks expensive for a chatbot can be a
 bargain for summarizing a long document, because the two jobs spend their tokens
 very differently.
