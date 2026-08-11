@@ -3,9 +3,12 @@
 
   Usage:  {{ partial "asset.html" "projects/2011-cardagin/header.jpg" }}
 
-  The argument is a path relative to the assets root (which is mirrored to the
-  GCS bucket), e.g. "projects/2011-cardagin/header.jpg". Absolute URLs (http(s):// or
-  protocol-relative //) are passed through unchanged.
+  The argument is a path relative to the assets root, e.g.
+  "projects/2011-cardagin/header.jpg". It must live under one of the gitignored
+  binary trees mirrored to the GCS bucket (ASSETS_REMOTE_DIRS in Taskfile.yml);
+  anything else under assets/ is compiled and published by Hugo itself and
+  should be referenced through Hugo Pipes, not through here. Absolute URLs
+  (http(s):// or protocol-relative //) are passed through unchanged.
 
   The development/production split is driven by the Hugo environment, so it is
   identical whether you're building or running a live server:
