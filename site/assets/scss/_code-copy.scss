@@ -40,6 +40,46 @@
       display: none;
     }
 
+    // Label bubble below the button: "Copy" while hovered or keyboard-focused,
+    // then "Copied!" as click feedback. It hangs over the code, so it stays
+    // click-through and out of the pointer's way.
+    .code-copy-tooltip {
+      position: absolute;
+      top: calc(100% + 0.6rem);
+      right: 0;
+      padding: 0.35rem 0.7rem;
+      border-radius: 0.5rem;
+      background-color: #3f4038;
+      color: #f8f8f2;
+      font-family: $font-family;
+      font-size: 1.3rem;
+      line-height: 1.4;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transform: translateY(-0.3rem);
+      transition: opacity 0.25s ease, transform 0.25s ease,
+        background-color 0.2s ease, color 0.2s ease;
+
+      // Bubble tail, pointing back up at the button.
+      &::after {
+        content: "";
+        position: absolute;
+        bottom: 100%;
+        right: 0.6rem;
+        border: 0.4rem solid transparent;
+        border-bottom-color: #3f4038;
+        transition: border-bottom-color 0.2s ease;
+      }
+    }
+
+    &:hover .code-copy-tooltip,
+    &:focus-visible .code-copy-tooltip,
+    &.copied .code-copy-tooltip {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
     &.copied {
       opacity: 1;
 
@@ -50,6 +90,15 @@
       .code-copy-icon-check {
         display: flex;
         color: #a6e22e;
+      }
+
+      .code-copy-tooltip {
+        background-color: #a6e22e;
+        color: #272822;
+
+        &::after {
+          border-bottom-color: #a6e22e;
+        }
       }
     }
   }
