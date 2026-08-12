@@ -1,0 +1,40 @@
+// The listing reuses the theme's shared `.list` markup — a right-aligned date
+// column beside the title — and only adds the blurb under each title.
+.experiments-list {
+  $description-color: #666;
+  $description-color-dark: #aaa;
+
+  // Entries are multi-line here, unlike the single-line blog list, so they need
+  // breathing room the shared rules don't provide.
+  $entry-spacing: 2.4rem;
+
+  .experiments li {
+    @include not-last {
+      margin-bottom: $entry-spacing;
+    }
+  }
+
+  // Takes the flex ratio the theme gives a bare `.title`, so the title and its
+  // blurb share one column and the blurb wraps under the title, not the date.
+  // `min-width: 0` keeps that ratio exact by letting the column shrink below its
+  // content's intrinsic width.
+  .experiment-body {
+    flex: 2;
+    min-width: 0;
+  }
+
+  .experiment-description {
+    margin: 0.4rem 0 0;
+    font-size: 1.5rem;
+    line-height: 1.4;
+    color: $description-color;
+
+    // Without this, `min-width: 0` lets a long unbreakable token spill out of
+    // the column and add horizontal scroll to the page.
+    overflow-wrap: anywhere;
+
+    @include dark-mode {
+      color: $description-color-dark;
+    }
+  }
+}

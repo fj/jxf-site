@@ -10,12 +10,17 @@
     </header>
     {{ .Content }}
     <ul class="experiments">
-      {{ range sort .Pages "Params.weight" }}
-      <li class="experiment">
-        <a class="experiment-title" href="{{ .RelPermalink }}">{{ .Title }}</a>
-        {{ with .Params.summary | default .Params.description }}
-        <p class="experiment-description">{{ . }}</p>
-        {{ end }}
+      {{/* Newest first, like the blog list and the section's feed. */}}
+      {{ range .Pages.ByDate.Reverse }}
+      <li>
+        {{/* The span always renders so an undated entry keeps the date column. */}}
+        <span class="date">{{ with .Date }}{{ time.Format ($.Site.Params.dateFormat | default "January 2, 2006") . }}{{ end }}</span>
+        <div class="experiment-body">
+          <a class="title" href="{{ .RelPermalink }}">{{ .Title }}</a>
+          {{ with .Params.summary | default .Params.description }}
+          <p class="experiment-description">{{ . }}</p>
+          {{ end }}
+        </div>
       </li>
       {{ end }}
     </ul>

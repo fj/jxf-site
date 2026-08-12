@@ -3,7 +3,6 @@ title: "LLM Explorer"
 description: "An interactive scatter plot for comparing large language models on cost and speed."
 date: "2026-06-27"
 summary: "Plot popular language models by blended cost and output speed, then bend the assumptions — workload mix, request size, cache hit rate — to see how the trade-offs shift."
-weight: 1
 experiment: "llm-explorer"
 ---
 

@@ -3,7 +3,6 @@ title: "Quote Card"
 description: "A client-side PNG quote generator: write a quote in Markdown, style the card, download the image."
 date: "2026-07-03"
 summary: "Turn a snippet of Markdown into a downloadable PNG quote card — font, borders, shadows, and colors tuned live on a canvas, rendered entirely in your browser."
-weight: 2
 experiment: "quote-card"
 ---
 
