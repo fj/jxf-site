@@ -74,23 +74,48 @@
     }
 
     .post-meta {
+      // Rows are flex lines so each icon centres on its label rather than on the
+      // font's x-height midpoint. The gap also stands in for the inter-item white
+      // space that flex layout discards; the icon adds a margin on top of it,
+      // keeping the wider icon-to-label distance the inline layout had.
+      $meta-gap: 0.5rem;
+
+      > div,
+      .date > span {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: $meta-gap;
+      }
+
+      // Flex breaks lines on an item's max-content width, so a row holding one
+      // long label would push it whole to the next line and strand the icon.
+      // Rows that are just an icon and its label never break; the label's own
+      // text still wraps.
+      .role,
+      .client,
+      .date > span {
+        flex-wrap: nowrap;
+      }
+
       .icon {
         width: 1.6rem;
         height: 1.6rem;
         margin-left: 0;
-        margin-right: 0.5rem;
+        margin-right: $meta-gap;
+        flex-shrink: 0;
       }
 
       .date {
         .posted-on {
           margin-left: 0;
-          margin-right: 1.5rem;
+          // Sits beside the row gap, which together restore the original 1.5rem.
+          margin-right: 1rem;
         }
       }
 
       .tags {
         .tag {
-          display: inline-block;
           padding: 0.3rem 0.6rem;
           background-color: $alt-bg-color;
           border-radius: 0.6rem;
