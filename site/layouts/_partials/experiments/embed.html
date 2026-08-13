@@ -8,6 +8,10 @@
   (verifying the pinned SRI) and serve it self-hosted, then load the local
   scripts in order. The host hardcodes nothing about any specific experiment.
 
+  Local style and script paths are relative to the experiment's own directory
+  and are cleaned before lookup, so an experiment can reach its siblings —
+  "../shared/ui.js" is how experiments share the common control kit.
+
   Usage: {{ partial "experiments/embed.html" "llm-explorer" }}
 */ -}}
 {{- $name := . -}}
@@ -27,7 +31,8 @@
 
 {{- /* Stylesheets — compile .scss; fingerprint in production builds. */ -}}
 {{- range $m.styles -}}
-  {{- $res := resources.Get (printf "%s/%s" $dir .) -}}
+  {{- $res := resources.Get (path.Join $dir .) -}}
+  {{- if not $res }}{{ errorf "experiment %q: no such stylesheet %q" $name . }}{{ end -}}
   {{- if strings.HasSuffix . ".scss" }}{{ $res = $res | toCSS }}{{ end -}}
   {{- if hugo.IsServer -}}
     <link rel="stylesheet" href="{{ $res.RelPermalink }}" media="screen">
@@ -76,7 +81,8 @@
 
 {{- /* Local scripts — in declared order (app entry last). */ -}}
 {{- range $m.scripts -}}
-  {{- $res := resources.Get (printf "%s/%s" $dir .) -}}
+  {{- $res := resources.Get (path.Join $dir .) -}}
+  {{- if not $res }}{{ errorf "experiment %q: no such script %q" $name . }}{{ end -}}
   {{- if hugo.IsServer -}}
     <script src="{{ $res.RelPermalink }}"></script>
   {{- else -}}
