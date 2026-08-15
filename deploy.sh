@@ -85,7 +85,11 @@ if [ "${REPORT_BUILD_STAGE:-}" = "1" ]; then
   note "task build exit $status"
   note "out files: $(find out -type f 2>/dev/null | wc -l)"
 
-  rm -rf out
+  # The only published path with a character Netlify's file API cannot key on.
+  # Drop it and publish the rest: if this deploy succeeds where every earlier
+  # full-site deploy failed, that path is the cause.
+  rm -rf "out/tags/c#"
+  note "removed the tag path with a # in it"
   exit 0
 fi
 
