@@ -47,7 +47,7 @@
               {{- if gt $index 0 }}
               <span class="separator">•</span>
               {{- end }}
-              <span class="tag"><a href="{{ .RelPermalink }}">{{ .Page.Data.Term }}</a></span>
+              <span class="tag"><a href="{{ .RelPermalink }}">{{ .Page.Params.title | default .Page.Data.Term }}</a></span>
             {{- end -}}
           </div>
           {{ end }}
