@@ -78,5 +78,26 @@ esac
 echo "deploy: $hugo_found"
 echo "deploy: task $task_found"
 
+# TEMPORARY, remove before merge: a failed build publishes nothing, so which
+# stage failed cannot be seen without the Netlify dashboard. In a preview,
+# record the stage — the name only, never the output — and publish it.
+if [ "${REPORT_BUILD_STAGE:-}" = "1" ]; then
+  stage="tools installed"
+  if task check:deploy >/dev/null 2>&1; then
+    stage="check passed"
+    if task build BASE_URL="$(base_url)" >/dev/null 2>&1; then
+      stage="build passed"
+    else
+      stage="build failed (exit $?)"
+    fi
+  else
+    stage="check failed (exit $?)"
+  fi
+  mkdir -p out
+  printf '%s\n' "$stage" >out/stage.txt
+  echo "deploy: reached stage: $stage"
+  exit 0
+fi
+
 task check:deploy
 task build BASE_URL="$(base_url)"
