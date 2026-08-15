@@ -14,7 +14,3 @@
 [build.environment]
   SITE_HUGO_VERSION = "0.165.0"
   SITE_TASK_VERSION = "v3.51.1"
-
-# TEMPORARY, remove before merge: report which build stage a preview reached.
-[context.deploy-preview.environment]
-  REPORT_BUILD_STAGE = "1"

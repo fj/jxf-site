@@ -44,55 +44,6 @@ mkdir -p "$BIN_PATH"
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 
-# TEMPORARY, remove before merge: run the real sequence, noting each stage — the
-# stage name and exit status only, never command output. The trap publishes what
-# the run reached even if it dies partway, which a plain marker cannot do.
-if [ "${REPORT_BUILD_STAGE:-}" = "1" ]; then
-  trace="$tmp/stage.txt"
-  : >"$trace"
-  trap 'mkdir -p out; cp "$trace" out/stage.txt 2>/dev/null; rm -rf "$tmp"; exit 0' EXIT
-  note() { echo "$1" >>"$trace"; }
-
-  note "deploy.sh ran"
-  curl --fail --location --silent --show-error \
-    --output "$tmp/task-install.sh" "https://taskfile.dev/install.sh"
-  sh "$tmp/task-install.sh" -b "$BIN_PATH" "$SITE_TASK_VERSION" >/dev/null 2>&1
-  note "task installed"
-
-  curl --fail --location --silent --show-error --output "$tmp/hugo.tar.gz" \
-    "https://github.com/gohugoio/hugo/releases/download/v${SITE_HUGO_VERSION}/hugo_extended_${SITE_HUGO_VERSION}_linux-amd64.tar.gz"
-  tar -xzf "$tmp/hugo.tar.gz" -C "$BIN_PATH" hugo
-  note "hugo installed"
-
-  case "$(hugo version)" in
-    *"v${SITE_HUGO_VERSION}"*"+extended"*) note "hugo assertion passed" ;;
-    *) note "hugo assertion failed" ;;
-  esac
-  case "$(task --version)" in
-    *"${SITE_TASK_VERSION#v}"*) note "task assertion passed" ;;
-    *) note "task assertion failed" ;;
-  esac
-
-  status=0
-  task check:deploy >/dev/null 2>&1 || status=$?
-  note "check:deploy exit $status"
-
-  # Hugo on its own succeeds here, so run the real build task and record what it
-  # returns, then replace out/ with the trace alone: if the deploy still fails,
-  # the cause is running the task, not the site it produces.
-  status=0
-  task build BASE_URL="$(base_url)" >/dev/null 2>&1 || status=$?
-  note "task build exit $status"
-  note "out files: $(find out -type f 2>/dev/null | wc -l)"
-
-  # The only published path with a character Netlify's file API cannot key on.
-  # Drop it and publish the rest: if this deploy succeeds where every earlier
-  # full-site deploy failed, that path is the cause.
-  rm -rf "out/tags/c#"
-  note "removed the tag path with a # in it"
-  exit 0
-fi
-
 curl --fail --location --silent --show-error \
   --output "$tmp/task-install.sh" "https://taskfile.dev/install.sh"
 sh "$tmp/task-install.sh" -b "$BIN_PATH" "$SITE_TASK_VERSION"
@@ -126,27 +77,6 @@ esac
 
 echo "deploy: $hugo_found"
 echo "deploy: task $task_found"
-
-# TEMPORARY, remove before merge: a failed build publishes nothing, so which
-# stage failed cannot be seen without the Netlify dashboard. In a preview,
-# record the stage — the name only, never the output — and publish it.
-if [ "${REPORT_BUILD_STAGE:-}" = "1" ]; then
-  stage="tools installed"
-  if task check:deploy >/dev/null 2>&1; then
-    stage="check passed"
-    if task build BASE_URL="$(base_url)" >/dev/null 2>&1; then
-      stage="build passed"
-    else
-      stage="build failed (exit $?)"
-    fi
-  else
-    stage="check failed (exit $?)"
-  fi
-  mkdir -p out
-  printf '%s\n' "$stage" >out/stage.txt
-  echo "deploy: reached stage: $stage"
-  exit 0
-fi
 
 task check:deploy
 task build BASE_URL="$(base_url)"
