@@ -4,7 +4,8 @@
 #
 # The pins are deliberately not named HUGO_VERSION: Netlify's build image reads
 # that key and provisions a Hugo of its own from it, so one name would drive
-# two installers.
+# two installers. `task check:deploy` checks the publish directory below
+# against the one the build writes to.
 
 [build]
   command = "./deploy.sh"

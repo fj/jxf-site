@@ -3,8 +3,29 @@
 # Netlify build entry point: install the pinned tools into ./bin, then build.
 # The versions come from netlify.toml, so a deploy uses known tools instead of
 # whatever the build image happens to ship.
+#
+# `deploy.sh --base-url` prints the base URL the current context builds with
+# and exits, which is how `task check:deploy` exercises that choice without
+# downloading anything.
 
 set -eu
+
+# The address that serves this deploy: the site URL in production, and the
+# deploy's own URL for a preview or branch deploy. The absolute URLs Hugo
+# writes (canonical links, RSS, sitemap) must agree with it. Away from Netlify
+# there is no such address, and the empty answer keeps the configured baseURL.
+base_url() {
+  if [ "${CONTEXT:-}" = "production" ]; then
+    echo "${URL:-}"
+  else
+    echo "${DEPLOY_PRIME_URL:-}"
+  fi
+}
+
+if [ "${1:-}" = "--base-url" ]; then
+  base_url
+  exit 0
+fi
 
 # Named apart from Netlify's own HUGO_VERSION: that key makes the build image
 # provision a second Hugo of its own, which this build then has to shadow.
@@ -57,4 +78,5 @@ esac
 echo "deploy: $hugo_found"
 echo "deploy: task $task_found"
 
-task build
+task check:deploy
+task build BASE_URL="$(base_url)"
