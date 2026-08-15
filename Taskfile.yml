@@ -255,6 +255,7 @@ tasks:
           --destination {{.OUTPUT_PATH}} \
           {{if .BASE_URL}}--baseURL "{{.BASE_URL}}"{{ end }}
       - task: build:remove-unused-theme-elements
+      - task: check:output
 
   # Everything the deploy depends on that a build cannot notice on its own: a
   # wrong base URL still builds, and a publish directory that no longer matches
@@ -297,6 +298,25 @@ tasks:
           exit 1
         fi
         echo "==> check:deploy: base URL per context and publish directory agree"
+
+  # Netlify keys every uploaded file by its path, and a path holding a `#` fails
+  # the deploy with no message naming the file — the build succeeds, the publish
+  # step reports only "error". Hugo will build such a path from a taxonomy term
+  # that contains one ("C#" becomes tags/c#/), so name the offender here, where
+  # the message can say what to do about it.
+  check:output:
+    desc: "check that every built path can be published"
+    cmds:
+      - |-
+        bad="$(find {{.OUTPUT_PATH}} -name '*[#?]*' 2>/dev/null | sed 's|^{{.OUTPUT_PATH}}/|    |')"
+        if [ -n "$bad" ]; then
+          printf '==> check:output: Netlify cannot publish these paths:\n%s\n' "$bad" >&2
+          echo "    give the source a URL-safe name — for a taxonomy term, tag the" >&2
+          echo "    content with a plain word and put the display name in the title" >&2
+          echo "    of site/content/<taxonomy>/<term>/_index.md" >&2
+          exit 1
+        fi
+        echo "==> check:output: every built path can be published"
 
   build:remove-unused-theme-elements:
     desc: "remove theme-provided assets this site doesn't use from the build output"
