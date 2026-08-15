@@ -239,9 +239,13 @@ tasks:
   # the address that serves the deploy (see deploy.sh), which differs per
   # context — production, deploy preview, branch deploy. Local builds leave it
   # empty and keep the configured baseURL.
+  # No font download: a production build serves fonts from the bucket, so the
+  # output is the same whether or not site/assets/fonts is on disk. Fetching
+  # them would only add a release download the deploy can fail on. `serve:dev`
+  # keeps the dependency, because it serves them from disk.
   build:
     desc: "build the website and save it (BASE_URL=... overrides the configured baseURL)"
-    deps: [clean, "assets:fonts:download"]
+    deps: [clean]
     vars:
       BASE_URL: '{{.BASE_URL | default ""}}'
     cmds:
