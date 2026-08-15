@@ -2,6 +2,9 @@
 out/
 public
 
+# deploy: Ignore the tools deploy.sh installs.
+/bin
+
 # hugo: Ignore generated resources.
 .hugo_build.lock
 resources/_gen

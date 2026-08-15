@@ -20,8 +20,9 @@ be created via `task new-post`.
 .
 ├── README.md           Lewis Carroll epigraph + dependencies + author's TODOs
 ├── Taskfile.yml        Task runner (build, serve, sync, new-post, clean)
-├── deploy.sh           Netlify build hook (installs Task + aws-cli, runs `task build`)
-├── .gitmodules         Pins site/themes/hugo-coder
+├── deploy.sh           Netlify build hook (installs the pinned Task + Hugo, runs `task build`)
+├── netlify.toml        Netlify build command, publish dir, and pinned tool versions
+├── .gitmodules         Pins site/themes/hugo-coder and site/assets/experiments
 ├── config/             Cloud infra config (NOT Hugo config — that lives in site/config/)
 │   └── gcs-cors.json   CORS policy for the GCS assets bucket (see `task assets:cors:sync:up`)
 ├── out/                Hugo build output (gitignored)
@@ -179,9 +180,20 @@ hugo new content -k posts --source site posts/foo.md # new post
 
 ## Deployment
 
-`deploy.sh` is the Netlify build script: it bootstraps Task and aws-cli, then
-runs `task build`. The `baseURL` in `config/_default/hugo.yaml`
-(`https://jxf-dot-me.netlify.app/`) is the deploy target.
+`netlify.toml` holds the deploy configuration — Netlify prefers it to the
+settings in its web UI, so the build stays in version control. It runs
+`./deploy.sh` and publishes `out/`.
+
+`deploy.sh` installs the Task and Hugo that `netlify.toml` pins into `./bin`,
+ahead of the build image's own Hugo, checks that it got them, then runs `task
+build`. The pinned Hugo is the *extended* build, which the SCSS pipeline needs.
+Raise `SITE_HUGO_VERSION` in `netlify.toml` to move the deploy to a newer Hugo.
+The pins avoid the name `HUGO_VERSION` on purpose: Netlify's build image reads
+that key and provisions a Hugo of its own from it.
+
+Both submodules are public over HTTPS, so Netlify checks them out on its own.
+A build that reports missing layouts (the theme) or a missing experiment
+manifest is a build whose submodules did not check out.
 
 ## Outstanding TODOs (from README.md)
 

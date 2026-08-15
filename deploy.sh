@@ -1,7 +1,60 @@
 #! /bin/sh
 
-# Install Task to `./bin`.
-sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d
+# Netlify build entry point: install the pinned tools into ./bin, then build.
+# The versions come from netlify.toml, so a deploy uses known tools instead of
+# whatever the build image happens to ship.
 
-# Run build task.
-./bin/task build
+set -eu
+
+# Named apart from Netlify's own HUGO_VERSION: that key makes the build image
+# provision a second Hugo of its own, which this build then has to shadow.
+: "${SITE_HUGO_VERSION:?no SITE_HUGO_VERSION; set it in netlify.toml}"
+: "${SITE_TASK_VERSION:?no SITE_TASK_VERSION; set it in netlify.toml}"
+
+BIN_PATH="$PWD/bin"
+PATH="$BIN_PATH:$PATH"
+export PATH
+
+mkdir -p "$BIN_PATH"
+
+# Download to disk rather than pipe into a shell: `set -e` sees the exit status
+# of the last command in a pipeline, so a failed download would otherwise reach
+# the build as a missing or half-written tool.
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
+
+curl --fail --location --silent --show-error \
+  --output "$tmp/task-install.sh" "https://taskfile.dev/install.sh"
+sh "$tmp/task-install.sh" -b "$BIN_PATH" "$SITE_TASK_VERSION"
+
+# The site needs the extended Hugo, which compiles SCSS. The build image has a
+# Hugo of its own, so put ours earlier in PATH.
+curl --fail --location --silent --show-error --output "$tmp/hugo.tar.gz" \
+  "https://github.com/gohugoio/hugo/releases/download/v${SITE_HUGO_VERSION}/hugo_extended_${SITE_HUGO_VERSION}_linux-amd64.tar.gz"
+tar -xzf "$tmp/hugo.tar.gz" -C "$BIN_PATH" hugo
+
+# Prove the build runs the pinned tools. Without this the deploy log shows the
+# versions but nothing rejects a different one — an installer that ignores the
+# version it is given, or another Hugo found earlier in PATH.
+hugo_found=$(hugo version)
+case "$hugo_found" in
+  *"v${SITE_HUGO_VERSION}"*"+extended"*) ;;
+  *)
+    echo "deploy: want extended Hugo v${SITE_HUGO_VERSION}, found: $hugo_found" >&2
+    exit 1
+    ;;
+esac
+
+task_found=$(task --version)
+case "$task_found" in
+  *"${SITE_TASK_VERSION#v}"*) ;;
+  *)
+    echo "deploy: want Task ${SITE_TASK_VERSION}, found: $task_found" >&2
+    exit 1
+    ;;
+esac
+
+echo "deploy: $hugo_found"
+echo "deploy: task $task_found"
+
+task build
