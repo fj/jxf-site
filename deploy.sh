@@ -44,33 +44,43 @@ mkdir -p "$BIN_PATH"
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 
-# TEMPORARY, remove before merge: the earlier stage marker never appeared, so
-# the build dies before it. Record how far the install gets — short status words
-# and the image's OS and libc version, never command output — and publish that.
+# TEMPORARY, remove before merge: run the real sequence, noting each stage — the
+# stage name and exit status only, never command output. The trap publishes what
+# the run reached even if it dies partway, which a plain marker cannot do.
 if [ "${REPORT_BUILD_STAGE:-}" = "1" ]; then
-  mkdir -p out
-  {
-    echo "deploy.sh ran"
-    uname -sr
-    ldd --version 2>&1 | head -1
-    if curl --fail --location --silent --show-error --output "$tmp/task-install.sh" \
-      "https://taskfile.dev/install.sh"; then echo "task installer: downloaded"
-    else echo "task installer: download failed"; fi
-    if sh "$tmp/task-install.sh" -b "$BIN_PATH" "$SITE_TASK_VERSION" >/dev/null 2>&1; then
-      echo "task: installed"
-    else echo "task: install failed"; fi
-    if "$BIN_PATH/task" --version >/dev/null 2>&1; then echo "task: runs"
-    else echo "task: does not run"; fi
-    if curl --fail --location --silent --show-error --output "$tmp/hugo.tar.gz" \
-      "https://github.com/gohugoio/hugo/releases/download/v${SITE_HUGO_VERSION}/hugo_extended_${SITE_HUGO_VERSION}_linux-amd64.tar.gz"; then
-      echo "hugo: downloaded"
-    else echo "hugo: download failed"; fi
-    if tar -xzf "$tmp/hugo.tar.gz" -C "$BIN_PATH" hugo >/dev/null 2>&1; then echo "hugo: extracted"
-    else echo "hugo: extract failed"; fi
-    if "$BIN_PATH/hugo" version >/dev/null 2>&1; then echo "hugo: runs"
-    else echo "hugo: does not run"; fi
-  } >out/stage.txt 2>&1
-  cat out/stage.txt
+  trace="$tmp/stage.txt"
+  : >"$trace"
+  trap 'mkdir -p out; cp "$trace" out/stage.txt 2>/dev/null; rm -rf "$tmp"; exit 0' EXIT
+  note() { echo "$1" >>"$trace"; }
+
+  note "deploy.sh ran"
+  curl --fail --location --silent --show-error \
+    --output "$tmp/task-install.sh" "https://taskfile.dev/install.sh"
+  sh "$tmp/task-install.sh" -b "$BIN_PATH" "$SITE_TASK_VERSION" >/dev/null 2>&1
+  note "task installed"
+
+  curl --fail --location --silent --show-error --output "$tmp/hugo.tar.gz" \
+    "https://github.com/gohugoio/hugo/releases/download/v${SITE_HUGO_VERSION}/hugo_extended_${SITE_HUGO_VERSION}_linux-amd64.tar.gz"
+  tar -xzf "$tmp/hugo.tar.gz" -C "$BIN_PATH" hugo
+  note "hugo installed"
+
+  case "$(hugo version)" in
+    *"v${SITE_HUGO_VERSION}"*"+extended"*) note "hugo assertion passed" ;;
+    *) note "hugo assertion failed" ;;
+  esac
+  case "$(task --version)" in
+    *"${SITE_TASK_VERSION#v}"*) note "task assertion passed" ;;
+    *) note "task assertion failed" ;;
+  esac
+
+  status=0
+  task check:deploy >/dev/null 2>&1 || status=$?
+  note "check:deploy exit $status"
+
+  status=0
+  task build BASE_URL="$(base_url)" >/dev/null 2>&1 || status=$?
+  note "build exit $status"
+  note "out entries: $(ls out 2>/dev/null | wc -l)"
   exit 0
 fi
 
