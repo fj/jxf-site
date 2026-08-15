@@ -77,10 +77,15 @@ if [ "${REPORT_BUILD_STAGE:-}" = "1" ]; then
   task check:deploy >/dev/null 2>&1 || status=$?
   note "check:deploy exit $status"
 
+  # Does Task resolve OUTPUT_PATH under the repo? A count, not the path.
+  note "output path under repo: $(task --dry build 2>&1 | grep -c "$PWD/out")"
+
+  # Run hugo itself, writing outside out/ so the publish directory stays under
+  # this script's control whatever hugo does.
   status=0
-  task build BASE_URL="$(base_url)" >/dev/null 2>&1 || status=$?
-  note "build exit $status"
-  note "out entries: $(ls out 2>/dev/null | wc -l)"
+  hugo --source site --destination "$tmp/site-out" >/dev/null 2>&1 || status=$?
+  note "hugo exit $status"
+  note "hugo wrote files: $(find "$tmp/site-out" -type f 2>/dev/null | wc -l)"
   exit 0
 fi
 
