@@ -280,17 +280,31 @@ tasks:
         check "build outside Netlify" "" \
           "$(CONTEXT= URL= DEPLOY_PRIME_URL= {{.PROJECT_ROOT}}/deploy.sh --base-url)"
 
-        # `build` turns that address into hugo's --baseURL, and passes none without it.
-        case "$(task --dry build BASE_URL=https://preview.test 2>&1)" in
-          *'--baseURL "https://preview.test"'*) ;;
-          *) fail="$(printf '%s\n    build BASE_URL=...: no --baseURL in the hugo command' "$fail")" ;;
-        esac
-        case "$(task --dry build 2>&1)" in
-          *--baseURL*) fail="$(printf '%s\n    build: --baseURL passed without a BASE_URL' "$fail")" ;;
-        esac
+        # deploy.sh hands that address to the build. Nothing downstream can tell
+        # the difference if it stops, because a build without one still succeeds.
+        grep -q 'task build BASE_URL=' {{.PROJECT_ROOT}}/deploy.sh \
+          || fail="$(printf '%s\n    deploy.sh: passes no BASE_URL to the build' "$fail")"
 
-        # Netlify publishes the directory the build writes to.
-        publish="$(sed -n 's/^ *publish *= *"\(.*\)" *$/\1/p' {{.PROJECT_ROOT}}/netlify.toml)"
+        # The address must reach the pages, not merely the hugo command line, so
+        # assert on built output: with a BASE_URL the pages carry it, without one
+        # they carry the configured baseURL instead.
+        task build BASE_URL=https://preview.test >/dev/null 2>&1
+        grep -q "https://preview.test/" {{.OUTPUT_PATH}}/index.html \
+          || fail="$(printf '%s\n    build BASE_URL=...: the pages do not carry that address' "$fail")"
+        task build >/dev/null 2>&1
+        if grep -q "preview.test" {{.OUTPUT_PATH}}/index.html; then
+          fail="$(printf '%s\n    build: the pages carry a BASE_URL that was not given' "$fail")"
+        fi
+
+        # Fonts come from the bucket in a production build, which is why `build`
+        # fetches none. If that stopped being true the pages would ask for files
+        # the build never downloaded.
+        grep -rqE 'https://[^"]*/fonts/[^"]*\.woff2' {{.OUTPUT_PATH}} \
+          || fail="$(printf '%s\n    build: the pages do not resolve fonts to the bucket' "$fail")"
+
+        # Netlify publishes the directory the build writes to. A trailing comment
+        # is allowed; a value in single quotes is not.
+        publish="$(sed -n 's/^[[:space:]]*publish[[:space:]]*=[[:space:]]*"\([^"]*\)".*/\1/p' {{.PROJECT_ROOT}}/netlify.toml)"
         check "netlify.toml publish" "$(basename {{.OUTPUT_PATH}})" "$publish"
 
         if [ -n "$fail" ]; then
@@ -308,7 +322,13 @@ tasks:
     desc: "check that every built path can be published"
     cmds:
       - |-
-        bad="$(find {{.OUTPUT_PATH}} -name '*[#?]*' 2>/dev/null | sed 's|^{{.OUTPUT_PATH}}/|    |')"
+        # An absent or empty tree would otherwise pass: find writes to stderr and
+        # reports nothing, which reads the same as "no bad paths".
+        if [ ! -d {{.OUTPUT_PATH}} ] || [ -z "$(find {{.OUTPUT_PATH}} -type f)" ]; then
+          echo "==> check:output: nothing built at {{.OUTPUT_PATH}}" >&2
+          exit 1
+        fi
+        bad="$(find {{.OUTPUT_PATH}} -name '*[#?]*' | sed 's|^{{.OUTPUT_PATH}}/|    |')"
         if [ -n "$bad" ]; then
           printf '==> check:output: Netlify cannot publish these paths:\n%s\n' "$bad" >&2
           echo "    give the source a URL-safe name — for a taxonomy term, tag the" >&2

@@ -165,6 +165,7 @@ All run from the repo root via [Task](https://taskfile.dev):
 | `task serve:prod`             | Live-reload server in the production environment — images served from the GCS bucket, minified CSS; mirrors the Netlify build (cleans first) |
 | `task build`                  | Production build into `./out/` (`BASE_URL=...` overrides the configured baseURL) |
 | `task check:deploy`           | Check the deploy wiring: base URL per Netlify context, publish directory |
+| `task check:output`           | Check that every built path can be published (runs at the end of `build`) |
 | `task clean`                  | Remove `out/` and `site/resources/`                       |
 | `task new-post ITEM_NAME=foo` | Scaffold `site/content/posts/foo.md` from the archetype   |
 | `task assets:sync:down` / `:down:hard` | Pull the bucket-backed asset trees from GCS (dry-run / actual) |

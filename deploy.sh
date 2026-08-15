@@ -22,6 +22,8 @@ base_url() {
   fi
 }
 
+# Answered before anything else the script needs, because `task check:deploy`
+# asks for it where the pins below are unset — on a developer machine.
 if [ "${1:-}" = "--base-url" ]; then
   base_url
   exit 0
