@@ -20,8 +20,9 @@ be created via `task new-post`.
 .
 ├── README.md           Lewis Carroll epigraph + dependencies + author's TODOs
 ├── Taskfile.yml        Task runner (build, serve, sync, new-post, clean)
-├── deploy.sh           Netlify build hook (installs Task + aws-cli, runs `task build`)
-├── .gitmodules         Pins site/themes/hugo-coder
+├── deploy.sh           Netlify build hook (installs the pinned Task + Hugo, runs `task build`)
+├── netlify.toml        Netlify build command, publish dir, and pinned tool versions
+├── .gitmodules         Pins site/themes/hugo-coder and site/assets/experiments
 ├── config/             Cloud infra config (NOT Hugo config — that lives in site/config/)
 │   └── gcs-cors.json   CORS policy for the GCS assets bucket (see `task assets:cors:sync:up`)
 ├── out/                Hugo build output (gitignored)
@@ -162,7 +163,9 @@ All run from the repo root via [Task](https://taskfile.dev):
 | ----------------------------- | -------------------------------------------------------- |
 | `task serve:dev`              | Live-reload server in the development environment — images served from disk, sourcemapped CSS (cleans first) |
 | `task serve:prod`             | Live-reload server in the production environment — images served from the GCS bucket, minified CSS; mirrors the Netlify build (cleans first) |
-| `task build`                  | Production build into `./out/`                            |
+| `task build`                  | Production build into `./out/` (`BASE_URL=...` overrides the configured baseURL) |
+| `task check:deploy`           | Check the deploy wiring: base URL per Netlify context, publish directory |
+| `task check:output`           | Check that every built path can be published (runs at the end of `build`) |
 | `task clean`                  | Remove `out/` and `site/resources/`                       |
 | `task new-post ITEM_NAME=foo` | Scaffold `site/content/posts/foo.md` from the archetype   |
 | `task assets:sync:down` / `:down:hard` | Pull the bucket-backed asset trees from GCS (dry-run / actual) |
@@ -179,9 +182,33 @@ hugo new content -k posts --source site posts/foo.md # new post
 
 ## Deployment
 
-`deploy.sh` is the Netlify build script: it bootstraps Task and aws-cli, then
-runs `task build`. The `baseURL` in `config/_default/hugo.yaml`
-(`https://jxf-dot-me.netlify.app/`) is the deploy target.
+`netlify.toml` holds the deploy configuration — Netlify prefers it to the
+settings in its web UI, so the build stays in version control. It runs
+`./deploy.sh` and publishes `out/`.
+
+`deploy.sh` installs the Task and Hugo that `netlify.toml` pins into `./bin`,
+ahead of the build image's own Hugo, checks that it got them, then runs `task
+build`. The pinned Hugo is the *extended* build, which the SCSS pipeline needs.
+Raise `SITE_HUGO_VERSION` in `netlify.toml` to move the deploy to a newer Hugo.
+The pins avoid the name `HUGO_VERSION` on purpose: Netlify's build image reads
+that key and provisions a Hugo of its own from it.
+
+The build gets its `baseURL` from Netlify rather than from
+`config/_default/hugo.yaml`: `deploy.sh` passes `$URL` for a production deploy
+and `$DEPLOY_PRIME_URL` for a preview or branch deploy, as `task build
+BASE_URL=...`. The absolute URLs Hugo writes (canonical links, RSS, sitemap)
+therefore match the address that serves each deploy. A local `task build`
+passes no `BASE_URL` and keeps the configured one.
+
+`task check:deploy` checks that wiring: it reads the base URL back out of
+`deploy.sh --base-url` for each context, confirms `task build` turns it into
+hugo's `--baseURL` (and passes none without it), and compares `netlify.toml`'s
+publish directory to `OUTPUT_PATH`. None of these fail a build on their own —
+a wrong base URL still builds — so `deploy.sh` runs the check before it builds.
+
+Both submodules are public over HTTPS, so Netlify checks them out on its own.
+A build that reports missing layouts (the theme) or a missing experiment
+manifest is a build whose submodules did not check out.
 
 ## Outstanding TODOs (from README.md)
 

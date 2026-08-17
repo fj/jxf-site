@@ -235,15 +235,108 @@ tasks:
           --environment {{.HUGO_ENV}} \
           {{if .DRAFTS}}--buildDrafts{{ end }}
 
+  # BASE_URL overrides the baseURL in the Hugo config. The Netlify build passes
+  # the address that serves the deploy (see deploy.sh), which differs per
+  # context — production, deploy preview, branch deploy. Local builds leave it
+  # empty and keep the configured baseURL.
+  # No font download: a production build serves fonts from the bucket, so the
+  # output is the same whether or not site/assets/fonts is on disk. Fetching
+  # them would only add a release download the deploy can fail on. `serve:dev`
+  # keeps the dependency, because it serves them from disk.
   build:
-    desc: "build the website and save it"
-    deps: [clean, "assets:fonts:download"]
+    desc: "build the website and save it (BASE_URL=... overrides the configured baseURL)"
+    deps: [clean]
+    vars:
+      BASE_URL: '{{.BASE_URL | default ""}}'
     cmds:
       - |-
         hugo \
           --source {{.SOURCE_PATH}} \
-          --destination {{.OUTPUT_PATH}}
+          --destination {{.OUTPUT_PATH}} \
+          {{if .BASE_URL}}--baseURL "{{.BASE_URL}}"{{ end }}
       - task: build:remove-unused-theme-elements
+      - task: check:output
+
+  # Everything the deploy depends on that a build cannot notice on its own: a
+  # wrong base URL still builds, and a publish directory that no longer matches
+  # OUTPUT_PATH only fails on Netlify, after the push. `deploy.sh` runs this
+  # before it builds, so a deploy fails on the drift rather than on its effect.
+  check:deploy:
+    desc: "check the deploy wiring: base URL per Netlify context, publish directory"
+    cmds:
+      - |-
+        fail=""
+        check() {
+          [ "$2" = "$3" ] || fail="$(printf '%s\n    %s: want [%s], got [%s]' "$fail" "$1" "$2" "$3")"
+        }
+
+        # deploy.sh maps the Netlify context to the address that serves the deploy.
+        check "production build" "https://site.test" \
+          "$(CONTEXT=production URL=https://site.test DEPLOY_PRIME_URL=https://preview.test {{.PROJECT_ROOT}}/deploy.sh --base-url)"
+        check "preview build" "https://preview.test" \
+          "$(CONTEXT=deploy-preview URL=https://site.test DEPLOY_PRIME_URL=https://preview.test {{.PROJECT_ROOT}}/deploy.sh --base-url)"
+        # Cleared rather than inherited: on Netlify these are always set, and
+        # this case is the build that runs where they are not.
+        check "build outside Netlify" "" \
+          "$(CONTEXT= URL= DEPLOY_PRIME_URL= {{.PROJECT_ROOT}}/deploy.sh --base-url)"
+
+        # deploy.sh hands that address to the build. Nothing downstream can tell
+        # the difference if it stops, because a build without one still succeeds.
+        grep -q 'task build BASE_URL=' {{.PROJECT_ROOT}}/deploy.sh \
+          || fail="$(printf '%s\n    deploy.sh: passes no BASE_URL to the build' "$fail")"
+
+        # The address must reach the pages, not merely the hugo command line, so
+        # assert on built output: with a BASE_URL the pages carry it, without one
+        # they carry the configured baseURL instead.
+        task build BASE_URL=https://preview.test >/dev/null 2>&1
+        grep -q "https://preview.test/" {{.OUTPUT_PATH}}/index.html \
+          || fail="$(printf '%s\n    build BASE_URL=...: the pages do not carry that address' "$fail")"
+        task build >/dev/null 2>&1
+        if grep -q "preview.test" {{.OUTPUT_PATH}}/index.html; then
+          fail="$(printf '%s\n    build: the pages carry a BASE_URL that was not given' "$fail")"
+        fi
+
+        # Fonts come from the bucket in a production build, which is why `build`
+        # fetches none. If that stopped being true the pages would ask for files
+        # the build never downloaded.
+        grep -rqE 'https://[^"]*/fonts/[^"]*\.woff2' {{.OUTPUT_PATH}} \
+          || fail="$(printf '%s\n    build: the pages do not resolve fonts to the bucket' "$fail")"
+
+        # Netlify publishes the directory the build writes to. A trailing comment
+        # is allowed; a value in single quotes is not.
+        publish="$(sed -n 's/^[[:space:]]*publish[[:space:]]*=[[:space:]]*"\([^"]*\)".*/\1/p' {{.PROJECT_ROOT}}/netlify.toml)"
+        check "netlify.toml publish" "$(basename {{.OUTPUT_PATH}})" "$publish"
+
+        if [ -n "$fail" ]; then
+          printf '==> check:deploy: the deploy wiring disagrees with itself:%s\n' "$fail" >&2
+          exit 1
+        fi
+        echo "==> check:deploy: base URL per context and publish directory agree"
+
+  # Netlify keys every uploaded file by its path, and a path holding a `#` fails
+  # the deploy with no message naming the file — the build succeeds, the publish
+  # step reports only "error". Hugo will build such a path from a taxonomy term
+  # that contains one ("C#" becomes tags/c#/), so name the offender here, where
+  # the message can say what to do about it.
+  check:output:
+    desc: "check that every built path can be published"
+    cmds:
+      - |-
+        # An absent or empty tree would otherwise pass: find writes to stderr and
+        # reports nothing, which reads the same as "no bad paths".
+        if [ ! -d {{.OUTPUT_PATH}} ] || [ -z "$(find {{.OUTPUT_PATH}} -type f)" ]; then
+          echo "==> check:output: nothing built at {{.OUTPUT_PATH}}" >&2
+          exit 1
+        fi
+        bad="$(find {{.OUTPUT_PATH}} -name '*[#?]*' | sed 's|^{{.OUTPUT_PATH}}/|    |')"
+        if [ -n "$bad" ]; then
+          printf '==> check:output: Netlify cannot publish these paths:\n%s\n' "$bad" >&2
+          echo "    give the source a URL-safe name — for a taxonomy term, tag the" >&2
+          echo "    content with a plain word and put the display name in the title" >&2
+          echo "    of site/content/<taxonomy>/<term>/_index.md" >&2
+          exit 1
+        fi
+        echo "==> check:output: every built path can be published"
 
   build:remove-unused-theme-elements:
     desc: "remove theme-provided assets this site doesn't use from the build output"

@@ -43,7 +43,7 @@
           {{ with .GetTerms "tags" }}
           <ul class="project-tags">
             {{ range . }}
-            <li class="tag"><a href="{{ .RelPermalink }}">{{ .Page.Data.Term }}</a></li>
+            <li class="tag"><a href="{{ .RelPermalink }}">{{ .Page.Params.title | default .Page.Data.Term }}</a></li>
             {{ end }}
           </ul>
           {{ end }}

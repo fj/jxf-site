@@ -1,0 +1,16 @@
+# Netlify reads this file in preference to the settings in its web UI, so the
+# deploy configuration stays in version control. `deploy.sh` installs the two
+# pinned tools below and then runs `task build`, which writes to `out/`.
+#
+# The pins are deliberately not named HUGO_VERSION: Netlify's build image reads
+# that key and provisions a Hugo of its own from it, so one name would drive
+# two installers. `task check:deploy` checks the publish directory below
+# against the one the build writes to.
+
+[build]
+  command = "./deploy.sh"
+  publish = "out"
+
+[build.environment]
+  SITE_HUGO_VERSION = "0.165.0"
+  SITE_TASK_VERSION = "v3.51.1"

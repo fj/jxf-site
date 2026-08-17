@@ -14,7 +14,7 @@ image:
     creator: "NOAA Office of Coast Survey"
     license: "Public domain"
     source: "https://commons.wikimedia.org/wiki/File:18453_-_Tacoma_Harbor_nautical_chart_NOAA_March_2013.jpg"
-tags: ["navigation", "geospatial", "hardware", "C#", "performance"]
+tags: ["navigation", "geospatial", "hardware", "csharp", "performance"]
 weight: 8
 ---
 

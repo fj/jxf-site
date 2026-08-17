@@ -14,7 +14,7 @@ image:
     creator: "Kitmondo.com"
     license: "CC BY 2.0"
     source: "https://www.flickr.com/photos/129143611@N03/15797773547"
-tags: ["health", "hardware", "Python", "C", "C#"]
+tags: ["health", "hardware", "Python", "C", "csharp"]
 weight: 6
 ---
 

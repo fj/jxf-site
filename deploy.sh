@@ -1,25 +1,84 @@
 #! /bin/sh
 
-# Install Task to `./bin`.
-sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d
+# Netlify build entry point: install the pinned tools into ./bin, then build.
+# The versions come from netlify.toml, so a deploy uses known tools instead of
+# whatever the build image happens to ship.
+#
+# `deploy.sh --base-url` prints the base URL the current context builds with
+# and exits, which is how `task check:deploy` exercises that choice without
+# downloading anything.
 
-# Add ~/bin to path
-PATH=/opt/buildhome/bin:$PATH
+set -eu
 
-# Install aws-cli.
-curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-unzip awscliv2.zip
-./aws/install -i ~/aws-cli -b ~/bin
+# The address that serves this deploy: the site URL in production, and the
+# deploy's own URL for a preview or branch deploy. The absolute URLs Hugo
+# writes (canonical links, RSS, sitemap) must agree with it. Away from Netlify
+# there is no such address, and the empty answer keeps the configured baseURL.
+base_url() {
+  if [ "${CONTEXT:-}" = "production" ]; then
+    echo "${URL:-}"
+  else
+    echo "${DEPLOY_PRIME_URL:-}"
+  fi
+}
 
-printenv
+# Answered before anything else the script needs, because `task check:deploy`
+# asks for it where the pins below are unset — on a developer machine.
+if [ "${1:-}" = "--base-url" ]; then
+  base_url
+  exit 0
+fi
 
-echo "AWS access key is: [$SECRETS_AWS_SECRET_ACCESS_KEY]"
-test -z "$SECRETS_AWS_SECRET_ACCESS_KEY"
-echo "Exit code: $?"
+# Named apart from Netlify's own HUGO_VERSION: that key makes the build image
+# provision a second Hugo of its own, which this build then has to shadow.
+: "${SITE_HUGO_VERSION:?no SITE_HUGO_VERSION; set it in netlify.toml}"
+: "${SITE_TASK_VERSION:?no SITE_TASK_VERSION; set it in netlify.toml}"
 
-echo "AWS secret key is: [$SECRETS_AWS_ACCESS_KEY_ID]"
-test -z "$SECRETS_AWS_ACCESS_KEY_ID"
-echo "Exit code: $?"
+BIN_PATH="$PWD/bin"
+PATH="$BIN_PATH:$PATH"
+export PATH
 
-# Run build task.
-./bin/task build
+mkdir -p "$BIN_PATH"
+
+# Download to disk rather than pipe into a shell: `set -e` sees the exit status
+# of the last command in a pipeline, so a failed download would otherwise reach
+# the build as a missing or half-written tool.
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
+
+curl --fail --location --silent --show-error \
+  --output "$tmp/task-install.sh" "https://taskfile.dev/install.sh"
+sh "$tmp/task-install.sh" -b "$BIN_PATH" "$SITE_TASK_VERSION"
+
+# The site needs the extended Hugo, which compiles SCSS. The build image has a
+# Hugo of its own, so put ours earlier in PATH.
+curl --fail --location --silent --show-error --output "$tmp/hugo.tar.gz" \
+  "https://github.com/gohugoio/hugo/releases/download/v${SITE_HUGO_VERSION}/hugo_extended_${SITE_HUGO_VERSION}_linux-amd64.tar.gz"
+tar -xzf "$tmp/hugo.tar.gz" -C "$BIN_PATH" hugo
+
+# Prove the build runs the pinned tools. Without this the deploy log shows the
+# versions but nothing rejects a different one — an installer that ignores the
+# version it is given, or another Hugo found earlier in PATH.
+hugo_found=$(hugo version)
+case "$hugo_found" in
+  *"v${SITE_HUGO_VERSION}"*"+extended"*) ;;
+  *)
+    echo "deploy: want extended Hugo v${SITE_HUGO_VERSION}, found: $hugo_found" >&2
+    exit 1
+    ;;
+esac
+
+task_found=$(task --version)
+case "$task_found" in
+  *"${SITE_TASK_VERSION#v}"*) ;;
+  *)
+    echo "deploy: want Task ${SITE_TASK_VERSION}, found: $task_found" >&2
+    exit 1
+    ;;
+esac
+
+echo "deploy: $hugo_found"
+echo "deploy: task $task_found"
+
+task check:deploy
+task build BASE_URL="$(base_url)"
