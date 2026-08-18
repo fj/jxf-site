@@ -16,7 +16,8 @@ authorData:
   name: "John Feminella"
   tagline: "software engineer · enthusiastic technologist · curiosity advocate"
   avatar:
-    url: "https://s3.amazonaws.com/assets.jxf.me/images/jf.jpeg"
+    # Relative to the assets root, resolved by layouts/partials/asset.html.
+    path: "images/jf.jpeg"
 social:
   - name: Bluesky
     url: https://bsky.app/profile/jxf.me

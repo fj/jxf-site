@@ -30,7 +30,7 @@ be created via `task new-post`.
     ├── config/         Hugo config (directory-based; merged per environment)
     │   └── _default/   Base config for every environment
     │       ├── hugo.yaml       Root settings: baseURL, title, theme, taxonomies, markup
-    │       ├── params.yaml     Site params: assets, customJS, customizations, authorData, social
+    │       ├── params.yaml     Site params: assets (remote base URL), customJS, customizations, authorData, social
     │       └── languages.yaml  Languages + the `main` navigation menu (en)
     ├── archetypes/
     │   └── posts.md    Front-matter template for `task new-post`
@@ -45,7 +45,7 @@ be created via `task new-post`.
     │       ├── head/custom-styles.html  Compiles SCSS via Hugo Pipes
     │       └── home/                     Customized homepage partials
     │           ├── author.html           Renders authorData.name + tagline
-    │           ├── avatar.html           Honors authorData.avatar.url, falls back to gravatar
+    │           ├── avatar.html           Honors authorData.avatar.path, falls back to gravatar
     │           ├── extensions.html       (empty)
     │           └── sections.html         Two-column "Posts" + "Events" lists (MODIFIED)
     ├── resources/      Hugo build cache (gitignored)
@@ -63,7 +63,7 @@ overrides:
 | ------------------------------------------- | ---------------------------------------------------- | ---------------------------------------------- |
 | `partials/head/custom-styles.html`          | theme's `_partials/head/custom-styles.html`          | Pipes `Site.Params.customizations.styles` through `toCSS \| minify \| fingerprint` (with sourcemaps in dev) |
 | `partials/home/author.html`                 | theme's `_partials/home/author.html`                 | Reads `authorData.name` / `authorData.tagline` |
-| `partials/home/avatar.html`                 | theme's `_partials/home/avatar.html`                 | Reads `authorData.avatar.url`; gravatar fallback |
+| `partials/home/avatar.html`                 | theme's `_partials/home/avatar.html`                 | Resolves `authorData.avatar.path` through `asset.html`; gravatar fallback |
 | `partials/home/extensions.html`             | theme's `_partials/home/extensions.html`             | Empty — explicit no-op                          |
 | `partials/home/sections.html`               | theme's stub `_partials/home/sections.html`          | Renders Posts and Events grid on the homepage   |
 
@@ -150,10 +150,33 @@ Two distinct asset flows:
    (`gcloud auth activate-service-account`). A precondition fails fast if
    neither is set up.
 
-   The avatar URL in `config/_default/params.yaml` is hardcoded to a public S3 URL
-   (`https://s3.amazonaws.com/assets.jxf.me/images/jf.jpeg`) — see the
-   author's TODOs in `README.md` about making prod/dev image paths
-   environment-aware.
+   Every reference to one of these binaries goes through
+   `layouts/partials/asset.html`, the avatar in `config/_default/params.yaml`
+   included, so a page never names the bucket itself.
+
+   Nothing in a build can tell whether the bucket actually serves any of this:
+   Hugo writes the URLs without fetching them, and the files never pass through
+   Netlify at all. Two checks ask the network instead, and they answer different
+   questions — keep them apart:
+
+   - `task check:assets` fetches every bucket address in `out/`. That is what
+     the pages a deploy publishes depend on, so `deploy.sh` runs it after the
+     build and a deploy fails rather than shipping 404ing images.
+   - `task check:probe` fetches `site/assets/images/probe.png` and compares the
+     bytes to the local copy. No page references the probe, so the bucket can
+     hold it only because a sync put it there — which makes this an answer about
+     the sync rather than about one build's assets. Comparing bytes matters: an
+     object an earlier sync left answers 200 forever, and a 200 alone would call
+     a sync that now uploads nothing healthy. `assets:sync:up:hard` runs it
+     after pushing, where a failure is something the operator can act on. The
+     deploy does not, because a deploy can do nothing about it.
+
+   The probe is gitignored like every other binary and written by `task
+   assets:probe` from a base64 copy in `Taskfile.yml`, so any machine can
+   produce the same one. It reads "ASSET PROBE" in white on orange — opening the
+   bucket URL answers the same question by eye. `ASSETS_PROBE` must name a path
+   under one of the synced trees or no sync would push it, and
+   `assets:sync:_check` refuses to sync if it does not.
 
 ## Common commands
 
@@ -164,8 +187,11 @@ All run from the repo root via [Task](https://taskfile.dev):
 | `task serve:dev`              | Live-reload server in the development environment — images served from disk, sourcemapped CSS (cleans first) |
 | `task serve:prod`             | Live-reload server in the production environment — images served from the GCS bucket, minified CSS; mirrors the Netlify build (cleans first) |
 | `task build`                  | Production build into `./out/` (`BASE_URL=...` overrides the configured baseURL) |
-| `task check:deploy`           | Check the deploy wiring: base URL per Netlify context, publish directory |
+| `task check:deploy`           | Check the deploy wiring: base URL per Netlify context, publish directory, the avatar and the checks `deploy.sh` runs |
 | `task check:output`           | Check that every built path can be published (runs at the end of `build`) |
+| `task check:assets`           | Check that the bucket serves the remote assets the built pages reference (needs a build first) |
+| `task check:probe`            | Check that the bucket serves this machine's probe (the up-sync does this for you) |
+| `task assets:probe`           | Write `site/assets/images/probe.png` from the copy in `Taskfile.yml` (the up-sync does this for you) |
 | `task clean`                  | Remove `out/` and `site/resources/`                       |
 | `task new-post ITEM_NAME=foo` | Scaffold `site/content/posts/foo.md` from the archetype   |
 | `task assets:sync:down` / `:down:hard` | Pull the bucket-backed asset trees from GCS (dry-run / actual) |
@@ -200,11 +226,19 @@ BASE_URL=...`. The absolute URLs Hugo writes (canonical links, RSS, sitemap)
 therefore match the address that serves each deploy. A local `task build`
 passes no `BASE_URL` and keeps the configured one.
 
+After the build, `deploy.sh` runs `task check:assets`, so a deploy whose images
+and webfonts the bucket does not serve fails at the deploy rather than in a
+reader's browser.
+
 `task check:deploy` checks that wiring: it reads the base URL back out of
 `deploy.sh --base-url` for each context, confirms `task build` turns it into
-hugo's `--baseURL` (and passes none without it), and compares `netlify.toml`'s
-publish directory to `OUTPUT_PATH`. None of these fail a build on their own —
-a wrong base URL still builds — so `deploy.sh` runs the check before it builds.
+hugo's `--baseURL` (and passes none without it), compares `netlify.toml`'s
+publish directory to `OUTPUT_PATH`, and confirms the homepage avatar resolves to
+the bucket rather than to a path Netlify never published. It also greps
+`deploy.sh` for the two lines that make all this run — `task build BASE_URL=`
+and `task check:assets` — because deleting either leaves every check passing
+and the deploy quietly unverified. None of these fail a build on their own — a
+wrong base URL still builds — so `deploy.sh` runs the check before it builds.
 
 Both submodules are public over HTTPS, so Netlify checks them out on its own.
 A build that reports missing layouts (the theme) or a missing experiment
@@ -215,11 +249,7 @@ manifest is a build whose submodules did not check out.
 These are unresolved decisions the author flagged — useful context if a
 proposed change touches them:
 
-1. **Image path strategy** — should production read images from S3 while
-   dev reads them locally? The avatar partial is the proposed test bed.
-   Open Hugo forum thread:
-   https://discourse.gohugo.io/t/best-practice-for-serving-different-images-in-production-vs-development/50560
-2. **Per-environment overrides** — leverage Hugo's environment configs
+1. **Per-environment overrides** — leverage Hugo's environment configs
    for production-only overrides (e.g., the image path issue above). The
    directory-based config now in `site/config/_default/` is the base layer;
    add a sibling `site/config/production/` (or `development/`) to override
@@ -229,6 +259,9 @@ proposed change touches them:
 Config location (Hugo's directory-based config under `site/config/_default/`)
 is **done** — the legacy `site/config.yaml` was split into `hugo.yaml`,
 `params.yaml`, and `languages.yaml` there.
+
+Image path strategy is **done** — `asset.html` resolves every binary to disk in
+development and to the GCS bucket in production, the avatar included.
 
 ## Gotchas for agents
 

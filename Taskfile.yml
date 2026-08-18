@@ -19,6 +19,16 @@ vars:
   # publishes into the build output, so the bucket never serves it. Keep this
   # list in agreement with the corresponding block in .gitignore.
   ASSETS_REMOTE_DIRS: "fonts images posts projects"
+  # A file no page references, carried up by the same sync as the rest of the
+  # images. Because nothing links it, the bucket can only hold it because a sync
+  # put it there — which is what makes it an answer about the sync itself. It
+  # must live under one of the trees above, or no sync would push it;
+  # `assets:sync:_check` refuses to sync if it does not.
+  ASSETS_PROBE: "images/probe.png"
+  # The same bucket as ASSETS_REMOTE_PATH, over HTTP, as a reader reaches it.
+  # Read from the site params so one edit moves both the pages and the checks.
+  ASSETS_REMOTE_BASE_URL:
+    sh: sed -n 's|^[[:space:]]*remoteBaseURL:[[:space:]]*"\([^"]*\)".*|\1|p' site/config/_default/params.yaml
 
 tasks:
 
@@ -55,6 +65,29 @@ tasks:
            {{.FONTS_PATH}}/
         cp "$tmp"/LICENSE.txt {{.FONTS_PATH}}/FantasqueSansMono-LICENSE.txt
 
+  # Written rather than committed: it belongs to a gitignored tree, so it can
+  # only reach the bucket the way every other image does — through the up-sync,
+  # which writes it first on a machine that has none.
+  "assets:probe":
+    desc: "write the asset probe that check:probe fetches from the bucket"
+    cmds:
+      - |-
+        probe="{{.ASSETS_LOCAL_PATH}}/{{.ASSETS_PROBE}}"
+        mkdir -p "$(dirname "$probe")"
+        # White "ASSET PROBE" on orange, 256x128, two colors — a person who
+        # opens the bucket URL can tell a served probe from a broken image at a
+        # glance. Two colors and one bit per pixel keep it to a few hundred
+        # bytes, which is what makes it small enough to carry here. Rewritten
+        # every run, so this text stays the one copy to edit.
+        base64 -d > "$probe" <<'PROBE_PNG'
+        iVBORw0KGgoAAAANSUhEUgAAAQAAAACAAQMAAADeeyVJAAAABlBMVEXoWQz///8gGxQwAAAA
+        nElEQVR42u3XwQ2AIAwF0HpiDEZxM3DUjsHBWGtBgibqTS0pMaSHd4Ef2wD0sEAFmOF2jQZa
+        MBBN4ImQi8Xx/WHkQhsI/DnMBUhRdgOvA4nGU5LUOKykEoTmgOHqHgy8BiSjmMMi1Ahs4vQE
+        4t43agM5jSQVoDRzh20BBr4ANaxDJ9EGcicPx/OCTjCkHsBmrn///wObOM+gi5f7CjnQ08XO
+        GsFnAAAAAElFTkSuQmCC
+        PROBE_PNG
+        echo "==> assets:probe: wrote $probe"
+
   # ASSETS_REMOTE_DIRS and the .gitignore block naming the same trees are two
   # hand-maintained lists, and `assets:sync:prune:hard` deletes bucket prefixes
   # based on the first one — so rather than trust a comment to keep them aligned,
@@ -80,6 +113,10 @@ tasks:
           esac
           drift="$drift\n    $dir: gitignored but not in ASSETS_REMOTE_DIRS (it will never reach the bucket)"
         done
+        case " {{.ASSETS_REMOTE_DIRS}} " in
+          *" $(echo "{{.ASSETS_PROBE}}" | cut -d/ -f1) "*) ;;
+          *) drift="$drift\n    ASSETS_PROBE ({{.ASSETS_PROBE}}): outside every synced tree, so no sync would push it" ;;
+        esac
         if [ -n "$drift" ]; then
           printf '==> assets: .gitignore and ASSETS_REMOTE_DIRS disagree:%b\n' "$drift" >&2
           echo "    reconcile them in .gitignore and Taskfile.yml before syncing" >&2
@@ -103,6 +140,9 @@ tasks:
       - sh: gcloud auth list --filter=status:ACTIVE --format="value(account)" | grep -q .
         msg: "no active gcloud account; run 'gcloud auth login' or 'gcloud auth activate-service-account --key-file=...'"
     cmds:
+      # After the precondition rather than as a dependency: a machine with no
+      # gcloud account should fail on that and write nothing.
+      - task: "assets:probe"
       - |-
         for dir in {{.ASSETS_REMOTE_DIRS}}; do
           local_dir="{{.ASSETS_LOCAL_PATH}}/$dir"
@@ -114,6 +154,10 @@ tasks:
           gcloud storage rsync --recursive {{if ne .q ":hard"}}--dry-run{{ end }} \
             "$local_dir" "{{.ASSETS_REMOTE_PATH}}/$dir"
         done
+      # A push nobody reads is not a push. rsync reporting success says the
+      # objects were written; only a fetch says a reader can have them.
+      - |-
+        {{if eq .q ":hard"}}task check:probe{{else}}echo "==> assets:sync:up: dry run — 'task assets:sync:up:hard' pushes, then checks the bucket serves it"{{end}}
 
   # A tree absent from the bucket is skipped rather than treated as an error, but
   # that decision comes from one listing of the bucket root: probing each prefix
@@ -285,6 +329,11 @@ tasks:
         grep -q 'task build BASE_URL=' {{.PROJECT_ROOT}}/deploy.sh \
           || fail="$(printf '%s\n    deploy.sh: passes no BASE_URL to the build' "$fail")"
 
+        # Nothing downstream notices this one stopping either: the deploy still
+        # succeeds, and ships pages whose images no one has asked the bucket for.
+        grep -q 'task check:assets' {{.PROJECT_ROOT}}/deploy.sh \
+          || fail="$(printf '%s\n    deploy.sh: runs no check:assets after the build' "$fail")"
+
         # The address must reach the pages, not merely the hugo command line, so
         # assert on built output: with a BASE_URL the pages carry it, without one
         # they carry the configured baseURL instead.
@@ -301,6 +350,12 @@ tasks:
         # the build never downloaded.
         grep -rqE 'https://[^"]*/fonts/[^"]*\.woff2' {{.OUTPUT_PATH}} \
           || fail="$(printf '%s\n    build: the pages do not resolve fonts to the bucket' "$fail")"
+
+        # The avatar is the one image the homepage carries, and it reaches the
+        # reader the same way. A site-relative src would ask Netlify for a file
+        # the build never published, and nothing else would notice.
+        grep -qE '<img src="https?://[^"]+" alt="avatar"' {{.OUTPUT_PATH}}/index.html \
+          || fail="$(printf '%s\n    build: the homepage avatar does not resolve to the bucket' "$fail")"
 
         # Netlify publishes the directory the build writes to. A trailing comment
         # is allowed; a value in single quotes is not.
@@ -337,6 +392,83 @@ tasks:
           exit 1
         fi
         echo "==> check:output: every built path can be published"
+
+  # The published pages fetch their images and webfonts from the bucket, not
+  # from Netlify, so a deploy can succeed with every one of them 404ing: Hugo
+  # writes those URLs without ever fetching them, and Netlify never sees the
+  # files at all. Ask the network instead, for each address the build wrote.
+  # Only those: this runs in the deploy, so it answers about the pages the
+  # deploy publishes and nothing else. The probe is `check:probe`, which the
+  # up-sync runs, where a failure is something the operator can act on.
+  check:assets:
+    desc: "check that the bucket serves the remote assets the built pages reference"
+    cmds:
+      - |-
+        if [ ! -d {{.OUTPUT_PATH}} ]; then
+          echo "==> check:assets: nothing built at {{.OUTPUT_PATH}}; run 'task build' first" >&2
+          exit 1
+        fi
+
+        base="$(echo "{{.ASSETS_REMOTE_BASE_URL}}" | sed 's|/$||')"
+        if [ -z "$base" ]; then
+          echo "==> check:assets: the site params set no assets.remoteBaseURL" >&2
+          exit 1
+        fi
+
+        # A build that resolves nothing to the bucket would otherwise pass this
+        # check by referencing nothing, which is the failure it exists to catch.
+        urls="$(grep -rhoE "https?://[^\"'()<>[:space:]]+" {{.OUTPUT_PATH}} | grep -F "$base/" | sort -u)"
+        if [ -z "$urls" ]; then
+          echo "==> check:assets: the built pages resolve no asset to $base" >&2
+          echo "    check that the build ran in the production environment" >&2
+          exit 1
+        fi
+
+        fail=""
+        for url in $urls; do
+          code="$(curl --silent --show-error --location --retry 2 --head \
+            --output /dev/null --write-out '%{http_code}' "$url" || echo 000)"
+          [ "$code" = "200" ] || fail="$(printf '%s\n    %s  %s' "$fail" "$code" "$url")"
+        done
+
+        if [ -n "$fail" ]; then
+          printf '==> check:assets: the bucket does not serve these:%s\n' "$fail" >&2
+          echo "    push them with 'task assets:sync:up:hard'; a 403 means the" >&2
+          echo "    bucket grants no public read" >&2
+          exit 1
+        fi
+        echo "==> check:assets: the bucket serves all $(echo "$urls" | wc -l | tr -d ' ') referenced assets"
+
+  # Whether a reader can have what the last up-sync pushed. No page references
+  # the probe, so the bucket holds it only because a sync put it there — which
+  # is what makes this an answer about the sync rather than about the assets one
+  # build happens to reference. Compare the bytes: an object an earlier sync
+  # left answers 200 forever, and would report a sync that now uploads nothing
+  # as healthy.
+  check:probe:
+    desc: "check that the bucket serves the probe this machine would upload"
+    deps: ["assets:probe"]
+    cmds:
+      - |-
+        url="$(echo "{{.ASSETS_REMOTE_BASE_URL}}" | sed 's|/$||')/{{.ASSETS_PROBE}}"
+        served="$(mktemp)"
+        trap 'rm -f "$served"' EXIT
+
+        code="$(curl --silent --show-error --location --retry 2 \
+          --output "$served" --write-out '%{http_code}' "$url" || echo 000)"
+        if [ "$code" != "200" ]; then
+          echo "==> check:probe: $code for $url" >&2
+          echo "    push it with 'task assets:sync:up:hard'; a 403 means the" >&2
+          echo "    bucket grants no public read" >&2
+          exit 1
+        fi
+
+        if ! cmp -s "$served" "{{.ASSETS_LOCAL_PATH}}/{{.ASSETS_PROBE}}"; then
+          echo "==> check:probe: $url serves a probe this machine did not write" >&2
+          echo "    an earlier sync put it there and the last one did not land" >&2
+          exit 1
+        fi
+        echo "==> check:probe: the bucket serves this machine's probe"
 
   build:remove-unused-theme-elements:
     desc: "remove theme-provided assets this site doesn't use from the build output"
