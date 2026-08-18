@@ -82,3 +82,4 @@ echo "deploy: task $task_found"
 
 task check:deploy
 task build BASE_URL="$(base_url)"
+task check:assets
