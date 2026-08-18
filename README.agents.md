@@ -30,7 +30,7 @@ be created via `task new-post`.
     ├── config/         Hugo config (directory-based; merged per environment)
     │   └── _default/   Base config for every environment
     │       ├── hugo.yaml       Root settings: baseURL, title, theme, taxonomies, markup
-    │       ├── params.yaml     Site params: assets, customJS, customizations, authorData, social
+    │       ├── params.yaml     Site params: assets (remote base URL), customJS, customizations, authorData, social
     │       └── languages.yaml  Languages + the `main` navigation menu (en)
     ├── archetypes/
     │   └── posts.md    Front-matter template for `task new-post`
@@ -45,7 +45,7 @@ be created via `task new-post`.
     │       ├── head/custom-styles.html  Compiles SCSS via Hugo Pipes
     │       └── home/                     Customized homepage partials
     │           ├── author.html           Renders authorData.name + tagline
-    │           ├── avatar.html           Honors authorData.avatar.url, falls back to gravatar
+    │           ├── avatar.html           Honors authorData.avatar.path, falls back to gravatar
     │           ├── extensions.html       (empty)
     │           └── sections.html         Two-column "Posts" + "Events" lists (MODIFIED)
     ├── resources/      Hugo build cache (gitignored)
@@ -63,7 +63,7 @@ overrides:
 | ------------------------------------------- | ---------------------------------------------------- | ---------------------------------------------- |
 | `partials/head/custom-styles.html`          | theme's `_partials/head/custom-styles.html`          | Pipes `Site.Params.customizations.styles` through `toCSS \| minify \| fingerprint` (with sourcemaps in dev) |
 | `partials/home/author.html`                 | theme's `_partials/home/author.html`                 | Reads `authorData.name` / `authorData.tagline` |
-| `partials/home/avatar.html`                 | theme's `_partials/home/avatar.html`                 | Reads `authorData.avatar.url`; gravatar fallback |
+| `partials/home/avatar.html`                 | theme's `_partials/home/avatar.html`                 | Resolves `authorData.avatar.path` through `asset.html`; gravatar fallback |
 | `partials/home/extensions.html`             | theme's `_partials/home/extensions.html`             | Empty — explicit no-op                          |
 | `partials/home/sections.html`               | theme's stub `_partials/home/sections.html`          | Renders Posts and Events grid on the homepage   |
 
@@ -150,10 +150,11 @@ Two distinct asset flows:
    (`gcloud auth activate-service-account`). A precondition fails fast if
    neither is set up.
 
-   The avatar URL in `config/_default/params.yaml` is hardcoded to a public S3 URL
-   (`https://s3.amazonaws.com/assets.jxf.me/images/jf.jpeg`) — see the
-   author's TODOs in `README.md` about making prod/dev image paths
-   environment-aware.
+   Every reference to one of these binaries goes through
+   `layouts/partials/asset.html`, the avatar in `config/_default/params.yaml`
+   included, so a page never names the bucket itself. `task check:deploy`
+   asserts the built homepage carries an absolute avatar, because a
+   site-relative one would ask Netlify for a file the build never published.
 
 ## Common commands
 
@@ -215,11 +216,7 @@ manifest is a build whose submodules did not check out.
 These are unresolved decisions the author flagged — useful context if a
 proposed change touches them:
 
-1. **Image path strategy** — should production read images from S3 while
-   dev reads them locally? The avatar partial is the proposed test bed.
-   Open Hugo forum thread:
-   https://discourse.gohugo.io/t/best-practice-for-serving-different-images-in-production-vs-development/50560
-2. **Per-environment overrides** — leverage Hugo's environment configs
+1. **Per-environment overrides** — leverage Hugo's environment configs
    for production-only overrides (e.g., the image path issue above). The
    directory-based config now in `site/config/_default/` is the base layer;
    add a sibling `site/config/production/` (or `development/`) to override
@@ -229,6 +226,9 @@ proposed change touches them:
 Config location (Hugo's directory-based config under `site/config/_default/`)
 is **done** — the legacy `site/config.yaml` was split into `hugo.yaml`,
 `params.yaml`, and `languages.yaml` there.
+
+Image path strategy is **done** — `asset.html` resolves every binary to disk in
+development and to the GCS bucket in production, the avatar included.
 
 ## Gotchas for agents
 

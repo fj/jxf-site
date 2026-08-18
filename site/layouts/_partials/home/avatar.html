@@ -1,9 +1,7 @@
-{{ $avatarUrl := .Site.Params.authorData.avatar.url }}
+{{ $avatar := .Site.Params.authorData.avatar.path }}
 
-{{ if and ($avatarUrl) (not (isset .Site.Params "gravatar")) }}
-  {{ with $avatarUrl }}
-    <div class="avatar"><img src="{{ . | relURL }}" alt="avatar"></div>
-  {{ end }}
+{{ if and ($avatar) (not (isset .Site.Params "gravatar")) }}
+  <div class="avatar"><img src="{{ partial "asset.html" $avatar }}" alt="avatar"></div>
 {{ end }}
 {{ with .Site.Params.gravatar }}
   <div class="avatar"><img src="https://www.gravatar.com/avatar/{{md5 .}}?s=240&d=mp" alt="gravatar"></div>

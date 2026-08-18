@@ -302,6 +302,12 @@ tasks:
         grep -rqE 'https://[^"]*/fonts/[^"]*\.woff2' {{.OUTPUT_PATH}} \
           || fail="$(printf '%s\n    build: the pages do not resolve fonts to the bucket' "$fail")"
 
+        # The avatar is the one image the homepage carries, and it reaches the
+        # reader the same way. A site-relative src would ask Netlify for a file
+        # the build never published, and nothing else would notice.
+        grep -qE '<img src="https?://[^"]+" alt="avatar"' {{.OUTPUT_PATH}}/index.html \
+          || fail="$(printf '%s\n    build: the homepage avatar does not resolve to the bucket' "$fail")"
+
         # Netlify publishes the directory the build writes to. A trailing comment
         # is allowed; a value in single quotes is not.
         publish="$(sed -n 's/^[[:space:]]*publish[[:space:]]*=[[:space:]]*"\([^"]*\)".*/\1/p' {{.PROJECT_ROOT}}/netlify.toml)"
