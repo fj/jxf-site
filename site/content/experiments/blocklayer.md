@@ -14,4 +14,6 @@ Editing is done with the mouse on the picture itself. Move over empty space and 
 
 The toolbar also drives the view: pan in the four compass directions, turn the level a quarter turn either way, zoom between one and four pixels per pixel, hide or show the elevation labels, the marks, and the objects, and make the tiles see-through so a tall column stops hiding what is behind it. The arrow keys, `[` and `]`, and `-` and `=` do the same from the keyboard once the picture has focus.
 
+The keyboard also edits the selected tile. `W` and `S` raise and lower it, `A` and `D` turn a ramp or stairs to face the next side, `B`, `R` and `T` make it a block, a ramp or stairs, `1` to `5` put an object on it or take it off, and `X` removes it. Marks follow the same cluster of keys held with Shift: `W`, `A`, `S` and `D` for north, west, south and east, `Q`, `E`, `Z` and `C` for the corners between them, and `P`, `L` and `J` for teleport, rope and jump. Every button's tooltip names its key.
+
 Everything is drawn on a canvas at the sprites' own scale and then scaled up by a whole number, so the pixels stay square at every zoom. The level saves itself to your browser's local storage after every change, so it is still there when you come back. Nothing leaves the page.
