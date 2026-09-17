@@ -334,6 +334,11 @@ tasks:
         grep -q 'task check:assets' {{.PROJECT_ROOT}}/deploy.sh \
           || fail="$(printf '%s\n    deploy.sh: runs no check:assets after the build' "$fail")"
 
+        # Nor this one: the experiments' unit tests run nowhere else, so a
+        # deploy that skips them ships whatever they would have caught.
+        grep -q 'task test:experiments' {{.PROJECT_ROOT}}/deploy.sh \
+          || fail="$(printf '%s\n    deploy.sh: runs no test:experiments before the build' "$fail")"
+
         # The address must reach the pages, not merely the hugo command line, so
         # assert on built output: with a BASE_URL the pages carry it, without one
         # they carry the configured baseURL instead.
@@ -469,6 +474,24 @@ tasks:
           exit 1
         fi
         echo "==> check:probe: the bucket serves this machine's probe"
+
+  # An experiment's pure modules can carry node:test files in a tests/ directory
+  # beside them. Nothing in the Hugo build runs JavaScript, so this is the only
+  # place they run.
+  test:experiments:
+    desc: "run the unit tests of every experiment that has a tests/ directory (needs node)"
+    vars:
+      TESTS: "{{.ASSETS_LOCAL_PATH}}/experiments/*/tests/*.test.js"
+    cmds:
+      - |-
+        # An empty run must pass: the deploy runs this whether or not any
+        # experiment has tests yet.
+        if ! ls {{.TESTS}} >/dev/null 2>&1; then
+          echo "==> test:experiments: no experiment has tests"
+          exit 0
+        fi
+        # Quoted, so node expands the pattern itself and names each file.
+        node --test '{{.TESTS}}'
 
   build:remove-unused-theme-elements:
     desc: "remove theme-provided assets this site doesn't use from the build output"
