@@ -479,14 +479,15 @@ tasks:
   # beside them. Nothing in the Hugo build runs JavaScript, so this is the only
   # place they run.
   test:experiments:
-    desc: "run the unit tests of every experiment that has a tests/ directory (needs node)"
+    desc: "run every *.test.js an experiment carries, wherever it keeps them (needs node)"
     vars:
-      TESTS: "{{.ASSETS_LOCAL_PATH}}/experiments/*/tests/*.test.js"
+      TESTS: "{{.ASSETS_LOCAL_PATH}}/experiments/**/*.test.js"
     cmds:
       - |-
         # An empty run must pass: the deploy runs this whether or not any
-        # experiment has tests yet.
-        if ! ls {{.TESTS}} >/dev/null 2>&1; then
+        # experiment has tests yet. find, not a glob, because the shell does
+        # not walk ** and an experiment may keep its tests at any depth.
+        if [ -z "$(find {{.ASSETS_LOCAL_PATH}}/experiments -name '*.test.js' -print -quit)" ]; then
           echo "==> test:experiments: no experiment has tests"
           exit 0
         fi
