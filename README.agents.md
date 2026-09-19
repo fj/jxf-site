@@ -191,7 +191,7 @@ All run from the repo root via [Task](https://taskfile.dev):
 | `task check:output`           | Check that every built path can be published (runs at the end of `build`) |
 | `task check:assets`           | Check that the bucket serves the remote assets the built pages reference (needs a build first) |
 | `task check:probe`            | Check that the bucket serves this machine's probe (the up-sync does this for you) |
-| `task test:experiments`       | Run the `node:test` suites under `site/assets/experiments/*/tests/` (needs `node` on `PATH`) |
+| `task test:experiments`       | Run every `*.test.js` under `site/assets/experiments/`, wherever an experiment keeps them (needs `node` on `PATH`) |
 | `task assets:probe`           | Write `site/assets/images/probe.png` from the copy in `Taskfile.yml` (the up-sync does this for you) |
 | `task clean`                  | Remove `out/` and `site/resources/`                       |
 | `task new-post ITEM_NAME=foo` | Scaffold `site/content/posts/foo.md` from the archetype   |

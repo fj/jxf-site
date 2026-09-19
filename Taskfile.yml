@@ -484,6 +484,13 @@ tasks:
       TESTS: "{{.ASSETS_LOCAL_PATH}}/experiments/**/*.test.js"
     cmds:
       - |-
+        # Every experiment declares itself with a manifest. None in sight means
+        # the submodule is not checked out, or the path has drifted, and the
+        # deploy's one unit-test gate would otherwise pass having run nothing.
+        if [ -z "$(find {{.ASSETS_LOCAL_PATH}}/experiments -name manifest.yaml -print -quit 2>/dev/null)" ]; then
+          printf '==> test:experiments: no experiment under %s/experiments\n' '{{.ASSETS_LOCAL_PATH}}' >&2
+          exit 1
+        fi
         # An empty run must pass: the deploy runs this whether or not any
         # experiment has tests yet. find, not a glob, because the shell does
         # not walk ** and an experiment may keep its tests at any depth.
