@@ -480,8 +480,6 @@ tasks:
   # place they run.
   test:experiments:
     desc: "run every *.test.js an experiment carries, wherever it keeps them (needs node)"
-    vars:
-      TESTS: "{{.ASSETS_LOCAL_PATH}}/experiments/**/*.test.js"
     cmds:
       - |-
         # Every experiment declares itself with a manifest. None in sight means
@@ -491,15 +489,17 @@ tasks:
           printf '==> test:experiments: no experiment under %s/experiments\n' '{{.ASSETS_LOCAL_PATH}}' >&2
           exit 1
         fi
+        # find, not a glob: the shell does not walk **, an experiment may keep
+        # its tests at any depth, and node is handed the files themselves, so a
+        # pattern that matches nothing cannot pass for a run.
+        tests=$(find {{.ASSETS_LOCAL_PATH}}/experiments -name '*.test.js' | sort)
         # An empty run must pass: the deploy runs this whether or not any
-        # experiment has tests yet. find, not a glob, because the shell does
-        # not walk ** and an experiment may keep its tests at any depth.
-        if [ -z "$(find {{.ASSETS_LOCAL_PATH}}/experiments -name '*.test.js' -print -quit)" ]; then
+        # experiment has tests yet.
+        if [ -z "$tests" ]; then
           echo "==> test:experiments: no experiment has tests"
           exit 0
         fi
-        # Quoted, so node expands the pattern itself and names each file.
-        node --test '{{.TESTS}}'
+        echo "$tests" | xargs node --test
 
   build:remove-unused-theme-elements:
     desc: "remove theme-provided assets this site doesn't use from the build output"
