@@ -493,11 +493,12 @@ tasks:
         # its tests at any depth, and node is handed the files themselves, so a
         # pattern that matches nothing cannot pass for a run.
         tests=$(find {{.ASSETS_LOCAL_PATH}}/experiments -name '*.test.js' | sort)
-        # An empty run must pass: the deploy runs this whether or not any
-        # experiment has tests yet.
+        # An experiment that declares itself carries tests. None in sight is
+        # the same hole the manifest guard closes: the gate would pass having
+        # run nothing, because the tests moved or the checkout is partial.
         if [ -z "$tests" ]; then
-          echo "==> test:experiments: no experiment has tests"
-          exit 0
+          printf '==> test:experiments: no *.test.js under %s/experiments\n' '{{.ASSETS_LOCAL_PATH}}' >&2
+          exit 1
         fi
         echo "$tests" | xargs node --test
 
