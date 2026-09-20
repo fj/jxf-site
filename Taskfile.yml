@@ -339,6 +339,20 @@ tasks:
         grep -q 'task test:experiments' {{.PROJECT_ROOT}}/deploy.sh \
           || fail="$(printf '%s\n    deploy.sh: runs no test:experiments before the build' "$fail")"
 
+        # That gate must also be able to fail. A checkout with nothing to run
+        # is the way it passes having run nothing, so both of its guards are
+        # asked here against a tree that holds what each one looks for.
+        probe="$(mktemp -d)"
+        mkdir -p "$probe/experiments/one"
+        if task test:experiments ASSETS_LOCAL_PATH="$probe" >/dev/null 2>&1; then
+          fail="$(printf '%s\n    test:experiments: passes where no experiment declares itself' "$fail")"
+        fi
+        : > "$probe/experiments/one/manifest.yaml"
+        if task test:experiments ASSETS_LOCAL_PATH="$probe" >/dev/null 2>&1; then
+          fail="$(printf '%s\n    test:experiments: passes an experiment that carries no tests' "$fail")"
+        fi
+        rm -rf "$probe"
+
         # The address must reach the pages, not merely the hugo command line, so
         # assert on built output: with a BASE_URL the pages carry it, without one
         # they carry the configured baseURL instead.
