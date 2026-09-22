@@ -16,7 +16,7 @@ Editing is done with the mouse on the picture itself. Move over empty space and 
 
 The toolbar also drives the view: pan in the four compass directions, turn the level a quarter turn either way, zoom between one and four pixels per pixel, hide or show the elevation labels, the marks, and the objects, and make the tiles see-through so a tall column stops hiding what is behind it. A see-through level also changes what the pointer means: it reads the floor, so the cell under the pointer answers even when a column stands in front of it, and the tile it finds pulses magenta twice a second. That is also how a cell its neighbours wall in is reached: the pointer otherwise answers with whichever wall stands over it, since what it reads is what the picture shows.
 
-The keyboard does all of it too, once the picture has focus. Every button's tooltip names its key.
+The keyboard does all of it too, once the picture has focus. Every button's tooltip names its key, and a `?` badge in the top right corner of the picture lists all of them, one key to a line, while the pointer is on it.
 
 - The arrow keys pan, `[` and `]` turn the level a quarter turn, `-` and `=` zoom, and `Escape` drops the selection.
 - `Q` and `E` turn the level too, but held rather than pressed: the level swings round at half a turn a second for as long as the key is down, and stops anywhere between the corners. It turns about the middle of the view, so whatever you are looking at stays where it is. A quarter turn on `[` or `]` from there lands on the next corner.
