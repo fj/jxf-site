@@ -74,7 +74,7 @@
     }
 
     .post-meta {
-      // Rows are flex lines so each icon centres on its label rather than on the
+      // Rows are flex lines so each icon centers on its label rather than on the
       // font's x-height midpoint. The gap also stands in for the inter-item white
       // space that flex layout discards; the icon adds a margin on top of it,
       // keeping the wider icon-to-label distance the inline layout had.
