@@ -334,6 +334,25 @@ tasks:
         grep -q 'task check:assets' {{.PROJECT_ROOT}}/deploy.sh \
           || fail="$(printf '%s\n    deploy.sh: runs no check:assets after the build' "$fail")"
 
+        # Nor this one: the experiments' unit tests run nowhere else, so a
+        # deploy that skips them ships whatever they would have caught.
+        grep -q 'task test:experiments' {{.PROJECT_ROOT}}/deploy.sh \
+          || fail="$(printf '%s\n    deploy.sh: runs no test:experiments before the build' "$fail")"
+
+        # That gate must also be able to fail. A checkout with nothing to run
+        # is the way it passes having run nothing, so both of its guards are
+        # asked here against a tree that holds what each one looks for.
+        probe="$(mktemp -d)"
+        mkdir -p "$probe/experiments/one"
+        if task test:experiments ASSETS_LOCAL_PATH="$probe" >/dev/null 2>&1; then
+          fail="$(printf '%s\n    test:experiments: passes where no experiment declares itself' "$fail")"
+        fi
+        : > "$probe/experiments/one/manifest.yaml"
+        if task test:experiments ASSETS_LOCAL_PATH="$probe" >/dev/null 2>&1; then
+          fail="$(printf '%s\n    test:experiments: passes an experiment that carries no tests' "$fail")"
+        fi
+        rm -rf "$probe"
+
         # The address must reach the pages, not merely the hugo command line, so
         # assert on built output: with a BASE_URL the pages carry it, without one
         # they carry the configured baseURL instead.
@@ -469,6 +488,33 @@ tasks:
           exit 1
         fi
         echo "==> check:probe: the bucket serves this machine's probe"
+
+  # An experiment's pure modules can carry node:test files in a tests/ directory
+  # beside them. Nothing in the Hugo build runs JavaScript, so this is the only
+  # place they run.
+  test:experiments:
+    desc: "run every *.test.js an experiment carries, wherever it keeps them (needs node)"
+    cmds:
+      - |-
+        # Every experiment declares itself with a manifest. None in sight means
+        # the submodule is not checked out, or the path has drifted, and the
+        # deploy's one unit-test gate would otherwise pass having run nothing.
+        if [ -z "$(find {{.ASSETS_LOCAL_PATH}}/experiments -name manifest.yaml -print -quit 2>/dev/null)" ]; then
+          printf '==> test:experiments: no experiment under %s/experiments\n' '{{.ASSETS_LOCAL_PATH}}' >&2
+          exit 1
+        fi
+        # find, not a glob: the shell does not walk **, an experiment may keep
+        # its tests at any depth, and node is handed the files themselves, so a
+        # pattern that matches nothing cannot pass for a run.
+        tests=$(find {{.ASSETS_LOCAL_PATH}}/experiments -name '*.test.js' | sort)
+        # An experiment that declares itself carries tests. None in sight is
+        # the same hole the manifest guard closes: the gate would pass having
+        # run nothing, because the tests moved or the checkout is partial.
+        if [ -z "$tests" ]; then
+          printf '==> test:experiments: no *.test.js under %s/experiments\n' '{{.ASSETS_LOCAL_PATH}}' >&2
+          exit 1
+        fi
+        echo "$tests" | xargs node --test
 
   build:remove-unused-theme-elements:
     desc: "remove theme-provided assets this site doesn't use from the build output"

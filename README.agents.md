@@ -191,6 +191,7 @@ All run from the repo root via [Task](https://taskfile.dev):
 | `task check:output`           | Check that every built path can be published (runs at the end of `build`) |
 | `task check:assets`           | Check that the bucket serves the remote assets the built pages reference (needs a build first) |
 | `task check:probe`            | Check that the bucket serves this machine's probe (the up-sync does this for you) |
+| `task test:experiments`       | Run every `*.test.js` under `site/assets/experiments/`, wherever an experiment keeps them (needs `node` on `PATH`) |
 | `task assets:probe`           | Write `site/assets/images/probe.png` from the copy in `Taskfile.yml` (the up-sync does this for you) |
 | `task clean`                  | Remove `out/` and `site/resources/`                       |
 | `task new-post ITEM_NAME=foo` | Scaffold `site/content/posts/foo.md` from the archetype   |
@@ -226,18 +227,19 @@ BASE_URL=...`. The absolute URLs Hugo writes (canonical links, RSS, sitemap)
 therefore match the address that serves each deploy. A local `task build`
 passes no `BASE_URL` and keeps the configured one.
 
-After the build, `deploy.sh` runs `task check:assets`, so a deploy whose images
-and webfonts the bucket does not serve fails at the deploy rather than in a
-reader's browser.
+Before the build, `deploy.sh` runs `task test:experiments`, so an experiment
+whose unit tests fail never reaches the build. After the build, it runs `task
+check:assets`, so a deploy whose images and webfonts the bucket does not serve
+fails at the deploy rather than in a reader's browser.
 
 `task check:deploy` checks that wiring: it reads the base URL back out of
 `deploy.sh --base-url` for each context, confirms `task build` turns it into
 hugo's `--baseURL` (and passes none without it), compares `netlify.toml`'s
 publish directory to `OUTPUT_PATH`, and confirms the homepage avatar resolves to
 the bucket rather than to a path Netlify never published. It also greps
-`deploy.sh` for the two lines that make all this run — `task build BASE_URL=`
-and `task check:assets` — because deleting either leaves every check passing
-and the deploy quietly unverified. None of these fail a build on their own — a
+`deploy.sh` for the three lines that make all this run — `task build
+BASE_URL=`, `task check:assets` and `task test:experiments` — because deleting
+any of them leaves every check passing and the deploy quietly unverified. None of these fail a build on their own — a
 wrong base URL still builds — so `deploy.sh` runs the check before it builds.
 
 Both submodules are public over HTTPS, so Netlify checks them out on its own.
