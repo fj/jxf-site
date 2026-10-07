@@ -1,285 +1,38 @@
 # README.agents.md
 
-A reference for AI agents working on this repository. The user-facing README
-is intentionally sparse; this file captures the structural details an agent
-needs to make safe edits.
+Notes for AI agents. Run all commands from the repository root.
 
-## What this is
+## Stack
 
-A personal-blog Hugo site built on the [hugo-coder](https://github.com/fj/hugo-coder)
-theme (a fork at `site/themes/hugo-coder`, vendored as a git submodule —
-see `.gitmodules`). Hugo's *extended* build is required (SCSS support).
+- Hugo *extended* (the SCSS needs it). Source is `site/`; output is `out/`.
+- [Task](https://taskfile.dev) runs everything. See `task --list`.
+- Hugo config is in `site/config/_default/`. The root `config/` holds GCS config, not Hugo config.
+- `site/themes/hugo-coder` is a submodule. Do not edit it. To override a theme file, put a file at the same path under `site/layouts/`.
+- `site/assets/experiments` is also a submodule.
 
-The repository is currently a **skeleton**: it ships configuration, theme
-overrides, and SCSS, but `site/content/` does not exist yet — content will
-be created via `task new -- post NAME`.
+## Commands
 
-## Top-level layout
+| Command                            | Does                                                      |
+| ---------------------------------- | --------------------------------------------------------- |
+| `task serve`                       | Dev server, images from disk (`DRAFTS=1` shows drafts)    |
+| `task serve:prod`                  | Server with images from the bucket, as on Netlify         |
+| `task build`                       | Production build into `out/`                              |
+| `task new -- post NAME`            | Make `site/content/posts/NAME.md` from the archetype      |
+| `task test:experiments`            | Run the experiments' unit tests (needs `node`)            |
+| `task check:deploy`                | Check the deploy wiring                                   |
+| `task assets:sync:{down,up,prune}` | Sync binaries with GCS (dry run; add `:hard` to do it)    |
 
-```
-.
-├── README.md           Lewis Carroll epigraph + dependencies + author's TODOs
-├── Taskfile.yml        Task runner (build, serve, sync, new, clean)
-├── deploy.sh           Netlify build hook (installs the pinned Task + Hugo, runs `task build`)
-├── netlify.toml        Netlify build command, publish dir, and pinned tool versions
-├── .gitmodules         Pins site/themes/hugo-coder and site/assets/experiments
-├── config/             Cloud infra config (NOT Hugo config — that lives in site/config/)
-│   └── gcs-cors.json   CORS policy for the GCS assets bucket (see `task assets:cors:sync:up`)
-├── out/                Hugo build output (gitignored)
-└── site/               Hugo project root — passed to hugo as --source
-    ├── config/         Hugo config (directory-based; merged per environment)
-    │   └── _default/   Base config for every environment
-    │       ├── hugo.yaml       Root settings: baseURL, title, theme, taxonomies, markup
-    │       ├── params.yaml     Site params: assets (remote base URL), customJS, customizations, authorData, social
-    │       └── languages.yaml  Languages + the `main` navigation menu (en)
-    ├── archetypes/
-    │   └── posts.md    Front-matter template for `task new -- post`
-    ├── assets/
-    │   ├── images/     Binary images (gitignored — synced from GCS)
-    │   └── styles/     SCSS pipeline
-    │       ├── base.scss     Entry point (referenced from config/_default/params.yaml)
-    │       ├── common.scss   Responsive breakpoint mixins
-    │       └── author.scss   .about styles
-    ├── layouts/        Site-level overrides of the theme
-    │   └── partials/
-    │       ├── head/custom-styles.html  Compiles SCSS via Hugo Pipes
-    │       └── home/                     Customized homepage partials
-    │           ├── author.html           Renders authorData.name + tagline
-    │           ├── avatar.html           Honors authorData.avatar.path, falls back to gravatar
-    │           ├── extensions.html       (empty)
-    │           └── sections.html         Two-column "Posts" + "Events" lists (MODIFIED)
-    ├── resources/      Hugo build cache (gitignored)
-    └── themes/
-        └── hugo-coder/ Vendored theme (submodule — DO NOT edit in place)
-```
+## Assets
 
-## Theme override mechanism
+- Binaries in `site/assets/{fonts,images,posts,projects}/` are gitignored and live in `gs://site-assets.jxf.me`. Do not commit them.
+- A new bucket-backed directory needs an entry in `.gitignore` and in `ASSETS_REMOTE_DIRS`. The sync stops if the two differ.
+- Refer to binaries only through `_partials/asset.html`. It gives a disk path in development and a bucket URL in production.
+- `task check:assets` fetches every bucket URL in `out/`. `task check:probe` checks that the last sync worked.
 
-Hugo merges `site/layouts/` over `site/themes/hugo-coder/layouts/`. Files in
-the local `layouts/` shadow the theme's identically named files. The current
-overrides:
+## Deploy
 
-| Local file                                  | Shadows                                              | Purpose                                        |
-| ------------------------------------------- | ---------------------------------------------------- | ---------------------------------------------- |
-| `partials/head/custom-styles.html`          | theme's `_partials/head/custom-styles.html`          | Pipes `Site.Params.customizations.styles` through `toCSS \| minify \| fingerprint` (with sourcemaps in dev) |
-| `partials/home/author.html`                 | theme's `_partials/home/author.html`                 | Reads `authorData.name` / `authorData.tagline` |
-| `partials/home/avatar.html`                 | theme's `_partials/home/avatar.html`                 | Resolves `authorData.avatar.path` through `asset.html`; gravatar fallback |
-| `partials/home/extensions.html`             | theme's `_partials/home/extensions.html`             | Empty — explicit no-op                          |
-| `partials/home/sections.html`               | theme's stub `_partials/home/sections.html`          | Renders Posts and Events grid on the homepage   |
+Netlify runs `deploy.sh` (see `netlify.toml`). It installs the pinned Task and Hugo, then runs `task check:deploy`, `task test:experiments`, `task build` with Netlify's URL, and `task check:assets`.
 
-> **Don't edit anything under `site/themes/hugo-coder/`** — it's a submodule
-> tracking an upstream fork. To change theme behavior, add or modify a file
-> under `site/layouts/` with the same relative path (note: theme uses
-> `_partials/`, but local overrides go in `partials/` — Hugo resolves both).
+## Open TODO
 
-## Content model
-
-Content lives in `site/content/` (not yet created). Two primary sections are
-referenced by the homepage:
-
-- **`posts/`** — blog posts. `task new -- post foo` creates
-  `site/content/posts/foo.md` from `archetypes/posts.md`.
-- **`events/`** — talks/conferences. No archetype exists yet; create one if
-  you add this section formally.
-
-The homepage (`partials/home/sections.html`) shows the first 5 entries of
-each section, sorted by Hugo's default (date desc), with a "View all" link.
-
-### Front-matter (from `archetypes/posts.md`)
-
-```yaml
-draft: true
-date: "{{ .Date }}"
-title: "example-title"
-description: "example-description"
-slug: ""
-authors: []
-tags: []
-categories: []
-externalLink: ""
-series: []
-```
-
-`tags`, `categories`, `authors`, and `series` are all theme-supported
-taxonomies — the theme ships taxonomy partials for each
-(`_partials/taxonomy/{tags,categories,authors}.html` and
-`_partials/posts/series.html`).
-
-### Navigation menu (from `config/_default/languages.yaml`)
-
-| Label | URL           | Notes                                  |
-| ----- | ------------- | -------------------------------------- |
-| Blog  | `/posts/`     | Section listing                        |
-| Work  | `/projects/`  | Expects `content/projects.md` (single) |
-| Meta  | `/meta/`      | Expects `content/meta/` or `meta.md`   |
-| Self  | `/about/`     | Expects `content/about.md` — note the social "Connect" link points to `/self.html#connect`, suggesting an upcoming rename |
-
-None of these targets exist yet; creating them is part of standing up the site.
-
-## Asset pipeline
-
-Two distinct asset flows:
-
-1. **SCSS** — `site/assets/styles/base.scss` is listed in
-   `config/_default/params.yaml` under `customizations.styles` (i.e. the
-   effective key `params.customizations.styles`). The override at
-   `layouts/partials/head/custom-styles.html` reads that list and runs each
-   entry through Hugo Pipes:
-   - **Server mode** (`hugo server`): `toCSS` with sourcemaps, no fingerprint.
-   - **Build mode**: `toCSS | minify | fingerprint` with SRI integrity hashes.
-
-2. **Binaries** — the gitignored trees `site/assets/{fonts,images,posts,projects}/`
-   are stored in GCS (`gs://site-assets.jxf.me`) and synced via Taskfile:
-   - `task assets:sync:down` (dry-run) / `task assets:sync:down:hard` (actual)
-   - `task assets:sync:up`   (dry-run) / `task assets:sync:up:hard`   (actual)
-   - `task assets:sync:prune` (dry-run) / `:prune:hard` — delete bucket entries
-     outside those trees
-
-   That list is `ASSETS_REMOTE_DIRS` in `Taskfile.yml`, and it must stay in
-   agreement with the gitignore block naming the same paths — all three tasks
-   depend on `assets:sync:_check`, which derives the truth from `git
-   check-ignore` and refuses to sync on drift in either direction. The sync is
-   deliberately per-tree rather than over `site/assets` as a whole: the rest of
-   that tree (`js/`, `scss/`, `styles/`, `experiments/`) is version-controlled
-   source that Hugo Pipes compiles into the build output, so pushing it to the
-   bucket publishes files nothing fetches — and pulling it back down would
-   clobber the working copy with stale ones.
-
-   Auth is ambient: whatever `gcloud` account is active, so the same commands
-   work interactively (`gcloud auth login`) and in CI
-   (`gcloud auth activate-service-account`). A precondition fails fast if
-   neither is set up.
-
-   Every reference to one of these binaries goes through
-   `layouts/partials/asset.html`, the avatar in `config/_default/params.yaml`
-   included, so a page never names the bucket itself.
-
-   Nothing in a build can tell whether the bucket actually serves any of this:
-   Hugo writes the URLs without fetching them, and the files never pass through
-   Netlify at all. Two checks ask the network instead, and they answer different
-   questions — keep them apart:
-
-   - `task check:assets` fetches every bucket address in `out/`. That is what
-     the pages a deploy publishes depend on, so `deploy.sh` runs it after the
-     build and a deploy fails rather than shipping 404ing images.
-   - `task check:probe` fetches `site/assets/images/probe.png` and compares the
-     bytes to the local copy. No page references the probe, so the bucket can
-     hold it only because a sync put it there — which makes this an answer about
-     the sync rather than about one build's assets. Comparing bytes matters: an
-     object an earlier sync left answers 200 forever, and a 200 alone would call
-     a sync that now uploads nothing healthy. `assets:sync:up:hard` runs it
-     after pushing, where a failure is something the operator can act on. The
-     deploy does not, because a deploy can do nothing about it.
-
-   The probe is gitignored like every other binary and written by `task
-   assets:probe` from a base64 copy in `Taskfile.yml`, so any machine can
-   produce the same one. It reads "ASSET PROBE" in white on orange — opening the
-   bucket URL answers the same question by eye. `ASSETS_PROBE` must name a path
-   under one of the synced trees or no sync would push it, and
-   `assets:sync:_check` refuses to sync if it does not.
-
-## Common commands
-
-All run from the repo root via [Task](https://taskfile.dev):
-
-| Command                       | What it does                                             |
-| ----------------------------- | -------------------------------------------------------- |
-| `task serve:dev`              | Live-reload server in the development environment — images served from disk, sourcemapped CSS (cleans first) |
-| `task serve:prod`             | Live-reload server in the production environment — images served from the GCS bucket, minified CSS; mirrors the Netlify build (cleans first) |
-| `task build`                  | Production build into `./out/` (`BASE_URL=...` overrides the configured baseURL) |
-| `task check:deploy`           | Check the deploy wiring: base URL per Netlify context, publish directory, the avatar and the checks `deploy.sh` runs |
-| `task check:output`           | Check that every built path can be published (runs at the end of `build`) |
-| `task check:assets`           | Check that the bucket serves the remote assets the built pages reference (needs a build first) |
-| `task check:probe`            | Check that the bucket serves this machine's probe (the up-sync does this for you) |
-| `task test:experiments`       | Run every `*.test.js` under `site/assets/experiments/`, wherever an experiment keeps them (needs `node` on `PATH`) |
-| `task assets:probe`           | Write `site/assets/images/probe.png` from the copy in `Taskfile.yml` (the up-sync does this for you) |
-| `task clean`                  | Remove `out/` and `site/resources/`                       |
-| `task new -- post foo`        | Scaffold `site/content/posts/foo.md` from the archetype   |
-| `task assets:sync:down` / `:down:hard` | Pull the bucket-backed asset trees from GCS (dry-run / actual) |
-| `task assets:sync:up`   / `:up:hard`   | Push the bucket-backed asset trees to GCS (dry-run / actual)  |
-| `task assets:sync:prune` / `:prune:hard` | Delete bucket entries outside those trees (dry-run / actual) |
-
-Direct Hugo invocation (when Task isn't appropriate):
-
-```sh
-hugo server --source site --destination out          # dev
-hugo --source site --destination out                 # build
-hugo new content -k posts --source site posts/foo.md # new post
-```
-
-## Deployment
-
-`netlify.toml` holds the deploy configuration — Netlify prefers it to the
-settings in its web UI, so the build stays in version control. It runs
-`./deploy.sh` and publishes `out/`.
-
-`deploy.sh` installs the Task and Hugo that `netlify.toml` pins into `./bin`,
-ahead of the build image's own Hugo, checks that it got them, then runs `task
-build`. The pinned Hugo is the *extended* build, which the SCSS pipeline needs.
-Raise `SITE_HUGO_VERSION` in `netlify.toml` to move the deploy to a newer Hugo.
-The pins avoid the name `HUGO_VERSION` on purpose: Netlify's build image reads
-that key and provisions a Hugo of its own from it.
-
-The build gets its `baseURL` from Netlify rather than from
-`config/_default/hugo.yaml`: `deploy.sh` passes `$URL` for a production deploy
-and `$DEPLOY_PRIME_URL` for a preview or branch deploy, as `task build
-BASE_URL=...`. The absolute URLs Hugo writes (canonical links, RSS, sitemap)
-therefore match the address that serves each deploy. A local `task build`
-passes no `BASE_URL` and keeps the configured one.
-
-Before the build, `deploy.sh` runs `task test:experiments`, so an experiment
-whose unit tests fail never reaches the build. After the build, it runs `task
-check:assets`, so a deploy whose images and webfonts the bucket does not serve
-fails at the deploy rather than in a reader's browser.
-
-`task check:deploy` checks that wiring: it reads the base URL back out of
-`deploy.sh --base-url` for each context, confirms `task build` turns it into
-hugo's `--baseURL` (and passes none without it), compares `netlify.toml`'s
-publish directory to `OUTPUT_PATH`, and confirms the homepage avatar resolves to
-the bucket rather than to a path Netlify never published. It also greps
-`deploy.sh` for the three lines that make all this run — `task build
-BASE_URL=`, `task check:assets` and `task test:experiments` — because deleting
-any of them leaves every check passing and the deploy quietly unverified. None of these fail a build on their own — a
-wrong base URL still builds — so `deploy.sh` runs the check before it builds.
-
-Both submodules are public over HTTPS, so Netlify checks them out on its own.
-A build that reports missing layouts (the theme) or a missing experiment
-manifest is a build whose submodules did not check out.
-
-## Outstanding TODOs (from README.md)
-
-These are unresolved decisions the author flagged — useful context if a
-proposed change touches them:
-
-1. **Per-environment overrides** — leverage Hugo's environment configs
-   for production-only overrides (e.g., the image path issue above). The
-   directory-based config now in `site/config/_default/` is the base layer;
-   add a sibling `site/config/production/` (or `development/`) to override
-   per environment — `task serve:dev` / `serve:prod` already pass
-   `--environment`, and `task build` builds in production by default.
-
-Config location (Hugo's directory-based config under `site/config/_default/`)
-is **done** — the legacy `site/config.yaml` was split into `hugo.yaml`,
-`params.yaml`, and `languages.yaml` there.
-
-Image path strategy is **done** — `asset.html` resolves every binary to disk in
-development and to the GCS bucket in production, the avatar included.
-
-## Gotchas for agents
-
-- **The theme is a submodule.** Don't edit `site/themes/hugo-coder/`
-  directly. Override via `site/layouts/`.
-- **Theme uses `_partials/`, project uses `partials/`.** Both paths resolve
-  to the same lookup namespace in Hugo — keep using `partials/` for new
-  overrides for consistency with what's already here.
-- **No `content/` directory exists yet.** Don't assume sample posts are
-  present; bootstrap with `task new -- post NAME` when you need one.
-- **`site/assets/{fonts,images,posts,projects}/` are gitignored.** Don't commit
-  binaries to git; push them to GCS with `task assets:sync:up:hard`. Adding a
-  new bucket-backed tree means updating both `.gitignore` and
-  `ASSETS_REMOTE_DIRS`, or the sync will silently skip it.
-- **Hugo extended is required** (SCSS). The standard build will fail on
-  `base.scss`.
-- **Taskfile uses `{{.MATCH}}` wildcards** for `assets:sync:up*` /
-  `assets:sync:down*`, so `task assets:sync:up:hard` and `task assets:sync:up`
-  are the same task with different suffixes — `:hard` suppresses `--dry-run`.
+Per-environment config overrides (for example `site/config/production/`) do not exist yet.
