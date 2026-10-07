@@ -545,13 +545,19 @@ tasks:
       - git merge upstream/main
       - git push origin main
 
-  new-post:
-    desc: "add a new post (with ITEM_NAME=...)"
-    preconditions:
-      # Don't proceed if the name is blank.
-      - test -n "$ITEM_NAME"
+  new:
+    desc: "add new content (task new -- post NAME)"
+    silent: true
     cmds:
-      - mkdir -p {{.CONTENT_PATH}}
       - |-
-        hugo new content --logLevel info -k posts {{.ITEM_NAME}}.md \
-          --source {{.PROJECT_ROOT}}/site
+        set -- {{.CLI_ARGS}}
+        if [ "$#" -ne 2 ]; then
+          echo "usage: task new -- post NAME" >&2
+          exit 1
+        fi
+        if [ "$1" != post ]; then
+          echo "task new: unknown kind '$1' (expected: post)" >&2
+          exit 1
+        fi
+        hugo new content --logLevel info -k posts "posts/$2.md" \
+          --source {{.SOURCE_PATH}}
