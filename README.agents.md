@@ -12,14 +12,14 @@ see `.gitmodules`). Hugo's *extended* build is required (SCSS support).
 
 The repository is currently a **skeleton**: it ships configuration, theme
 overrides, and SCSS, but `site/content/` does not exist yet — content will
-be created via `task new-post`.
+be created via `task new -- post NAME`.
 
 ## Top-level layout
 
 ```
 .
 ├── README.md           Lewis Carroll epigraph + dependencies + author's TODOs
-├── Taskfile.yml        Task runner (build, serve, sync, new-post, clean)
+├── Taskfile.yml        Task runner (build, serve, sync, new, clean)
 ├── deploy.sh           Netlify build hook (installs the pinned Task + Hugo, runs `task build`)
 ├── netlify.toml        Netlify build command, publish dir, and pinned tool versions
 ├── .gitmodules         Pins site/themes/hugo-coder and site/assets/experiments
@@ -33,7 +33,7 @@ be created via `task new-post`.
     │       ├── params.yaml     Site params: assets (remote base URL), customJS, customizations, authorData, social
     │       └── languages.yaml  Languages + the `main` navigation menu (en)
     ├── archetypes/
-    │   └── posts.md    Front-matter template for `task new-post`
+    │   └── posts.md    Front-matter template for `task new -- post`
     ├── assets/
     │   ├── images/     Binary images (gitignored — synced from GCS)
     │   └── styles/     SCSS pipeline
@@ -77,7 +77,7 @@ overrides:
 Content lives in `site/content/` (not yet created). Two primary sections are
 referenced by the homepage:
 
-- **`posts/`** — blog posts. `task new-post ITEM_NAME=foo` creates
+- **`posts/`** — blog posts. `task new -- post foo` creates
   `site/content/posts/foo.md` from `archetypes/posts.md`.
 - **`events/`** — talks/conferences. No archetype exists yet; create one if
   you add this section formally.
@@ -194,7 +194,7 @@ All run from the repo root via [Task](https://taskfile.dev):
 | `task test:experiments`       | Run every `*.test.js` under `site/assets/experiments/`, wherever an experiment keeps them (needs `node` on `PATH`) |
 | `task assets:probe`           | Write `site/assets/images/probe.png` from the copy in `Taskfile.yml` (the up-sync does this for you) |
 | `task clean`                  | Remove `out/` and `site/resources/`                       |
-| `task new-post ITEM_NAME=foo` | Scaffold `site/content/posts/foo.md` from the archetype   |
+| `task new -- post foo`        | Scaffold `site/content/posts/foo.md` from the archetype   |
 | `task assets:sync:down` / `:down:hard` | Pull the bucket-backed asset trees from GCS (dry-run / actual) |
 | `task assets:sync:up`   / `:up:hard`   | Push the bucket-backed asset trees to GCS (dry-run / actual)  |
 | `task assets:sync:prune` / `:prune:hard` | Delete bucket entries outside those trees (dry-run / actual) |
@@ -273,7 +273,7 @@ development and to the GCS bucket in production, the avatar included.
   to the same lookup namespace in Hugo — keep using `partials/` for new
   overrides for consistency with what's already here.
 - **No `content/` directory exists yet.** Don't assume sample posts are
-  present; bootstrap with `task new-post` when you need one.
+  present; bootstrap with `task new -- post NAME` when you need one.
 - **`site/assets/{fonts,images,posts,projects}/` are gitignored.** Don't commit
   binaries to git; push them to GCS with `task assets:sync:up:hard`. Adding a
   new bucket-backed tree means updating both `.gitignore` and
