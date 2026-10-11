@@ -12,21 +12,8 @@ vars:
   RESOURCES_PATH: "{{.SOURCE_PATH}}/resources"
   ASSETS_LOCAL_PATH: "{{.PROJECT_ROOT}}/site/assets"
   ASSETS_REMOTE_PATH: "gs://site-assets.jxf.me"
-  # The only subtrees of site/assets that belong in the bucket: the gitignored
-  # binaries that `asset.html` resolves against params.assets.remoteBaseURL in
-  # production. Everything else under assets/ (js/, scss/, styles/, experiments/)
-  # is source in version control that Hugo Pipes compiles, fingerprints, and
-  # publishes into the build output, so the bucket never serves it. Keep this
-  # list in agreement with the corresponding block in .gitignore.
   ASSETS_REMOTE_DIRS: "fonts images posts projects"
-  # A file no page references, carried up by the same sync as the rest of the
-  # images. Because nothing links it, the bucket can only hold it because a sync
-  # put it there — which is what makes it an answer about the sync itself. It
-  # must live under one of the trees above, or no sync would push it;
-  # `assets:sync:_check` refuses to sync if it does not.
   ASSETS_PROBE: "images/probe.png"
-  # The same bucket as ASSETS_REMOTE_PATH, over HTTP, as a reader reaches it.
-  # Read from the site params so one edit moves both the pages and the checks.
   ASSETS_REMOTE_BASE_URL:
     sh: sed -n 's|^[[:space:]]*remoteBaseURL:[[:space:]]*"\([^"]*\)".*|\1|p' site/config/_default/params.yaml
 
@@ -65,20 +52,12 @@ tasks:
            {{.FONTS_PATH}}/
         cp "$tmp"/LICENSE.txt {{.FONTS_PATH}}/FantasqueSansMono-LICENSE.txt
 
-  # Written rather than committed: it belongs to a gitignored tree, so it can
-  # only reach the bucket the way every other image does — through the up-sync,
-  # which writes it first on a machine that has none.
   "assets:probe":
     desc: "write the asset probe that check:probe fetches from the bucket"
     cmds:
       - |-
         probe="{{.ASSETS_LOCAL_PATH}}/{{.ASSETS_PROBE}}"
         mkdir -p "$(dirname "$probe")"
-        # White "ASSET PROBE" on orange, 256x128, two colors — a person who
-        # opens the bucket URL can tell a served probe from a broken image at a
-        # glance. Two colors and one bit per pixel keep it to a few hundred
-        # bytes, which is what makes it small enough to carry here. Rewritten
-        # every run, so this text stays the one copy to edit.
         base64 -d > "$probe" <<'PROBE_PNG'
         iVBORw0KGgoAAAANSUhEUgAAAQAAAACAAQMAAADeeyVJAAAABlBMVEXoWQz///8gGxQwAAAA
         nElEQVR42u3XwQ2AIAwF0HpiDEZxM3DUjsHBWGtBgibqTS0pMaSHd4Ef2wD0sEAFmOF2jQZa
@@ -88,13 +67,6 @@ tasks:
         PROBE_PNG
         echo "==> assets:probe: wrote $probe"
 
-  # ASSETS_REMOTE_DIRS and the .gitignore block naming the same trees are two
-  # hand-maintained lists, and `assets:sync:prune:hard` deletes bucket prefixes
-  # based on the first one — so rather than trust a comment to keep them aligned,
-  # derive the truth from git and fail on drift in either direction. A gitignored
-  # tree missing from the list would silently never reach the bucket (production
-  # 404s, and prune would delete it if it got there another way); a listed tree
-  # that isn't gitignored is version-controlled source the sync would publish.
   "assets:sync:_check":
     internal: true
     cmds:
@@ -123,14 +95,6 @@ tasks:
           exit 1
         fi
 
-  # Assets live in GCS, one bucket prefix per entry in ASSETS_REMOTE_DIRS —
-  # syncing site/assets wholesale would push (and, coming back down, overwrite)
-  # the version-controlled sources that share that tree. `gcloud storage rsync`
-  # is additive by default (no deletes unless asked) and supports a dry run.
-  # Auth is ambient: the tasks use whatever gcloud account is active, so the same
-  # command works interactively (after `gcloud auth login`) and in CI (after
-  # `gcloud auth activate-service-account --key-file=...`, or a Workload
-  # Identity Federation step). The precondition fails fast if neither is set up.
   "assets:sync:up*":
     desc: "sync assets up to cloud storage (use :up:hard to bypass dry run)"
     deps: ["assets:sync:_check"]
@@ -140,8 +104,7 @@ tasks:
       - sh: gcloud auth list --filter=status:ACTIVE --format="value(account)" | grep -q .
         msg: "no active gcloud account; run 'gcloud auth login' or 'gcloud auth activate-service-account --key-file=...'"
     cmds:
-      # After the precondition rather than as a dependency: a machine with no
-      # gcloud account should fail on that and write nothing.
+      # Not a dep: with no gcloud account, the precondition must fail before anything is written.
       - task: "assets:probe"
       - |-
         for dir in {{.ASSETS_REMOTE_DIRS}}; do
@@ -154,15 +117,9 @@ tasks:
           gcloud storage rsync --recursive {{if ne .q ":hard"}}--dry-run{{ end }} \
             "$local_dir" "{{.ASSETS_REMOTE_PATH}}/$dir"
         done
-      # A push nobody reads is not a push. rsync reporting success says the
-      # objects were written; only a fetch says a reader can have them.
       - |-
         {{if eq .q ":hard"}}task check:probe{{else}}echo "==> assets:sync:up: dry run — 'task assets:sync:up:hard' pushes, then checks the bucket serves it"{{end}}
 
-  # A tree absent from the bucket is skipped rather than treated as an error, but
-  # that decision comes from one listing of the bucket root: probing each prefix
-  # separately would report an expired token or a network blip as "not in the
-  # bucket" and exit 0 having downloaded nothing.
   "assets:sync:down*":
     desc: "sync assets down to local environment (use :down:hard to bypass dry run)"
     deps: ["assets:sync:_check"]
@@ -173,6 +130,7 @@ tasks:
         msg: "no active gcloud account; run 'gcloud auth login' or 'gcloud auth activate-service-account --key-file=...'"
     cmds:
       - |-
+        # One listing, so an auth or network failure fails the task instead of skipping every tree.
         if ! bucket_root="$(gcloud storage ls "{{.ASSETS_REMOTE_PATH}}/")"; then
           echo "==> assets:sync:down: cannot list {{.ASSETS_REMOTE_PATH}}" >&2
           exit 1
@@ -192,11 +150,6 @@ tasks:
             "$remote_dir" "{{.ASSETS_LOCAL_PATH}}/$dir"
         done
 
-  # The up-sync used to mirror all of site/assets, so the bucket still holds
-  # source trees the site never fetches from it. This removes everything at the
-  # bucket root outside ASSETS_REMOTE_DIRS. `gcloud storage rm` has no dry run of
-  # its own, so this task reports what it would delete and deletes nothing until
-  # :hard.
   "assets:sync:prune*":
     desc: "delete bucket entries outside the synced asset trees (use :prune:hard to bypass dry run)"
     deps: ["assets:sync:_check"]
@@ -231,9 +184,6 @@ tasks:
         $bucket_root
         BUCKET_ROOT
 
-  # Webfonts are served from the bucket but, unlike <img>, fonts are always
-  # fetched in CORS mode, so the bucket must send Access-Control-Allow-Origin.
-  # Re-run after (re)creating the bucket. Auth is ambient, like the sync tasks.
   "assets:cors:sync:up":
     desc: "sync CORS config up to the assets bucket so cross-origin webfonts load"
     preconditions:
@@ -259,11 +209,6 @@ tasks:
       - task: serve:_run
         vars: { HUGO_ENV: production }
 
-  # Shared serve implementation. The dev/prod split is the Hugo environment and
-  # nothing else: layouts key off `hugo.IsProduction` to choose disk vs. bucket
-  # assets and dev vs. minified CSS, so the same `hugo server` invocation
-  # faithfully previews either target (prod even live-reloads). Pass DRAFTS=1 to
-  # include draft content.
   serve:_run:
     internal: true
     deps: [clean, "assets:fonts:download"]
@@ -279,14 +224,7 @@ tasks:
           --environment {{.HUGO_ENV}} \
           {{if .DRAFTS}}--buildDrafts{{ end }}
 
-  # BASE_URL overrides the baseURL in the Hugo config. The Netlify build passes
-  # the address that serves the deploy (see deploy.sh), which differs per
-  # context — production, deploy preview, branch deploy. Local builds leave it
-  # empty and keep the configured baseURL.
-  # No font download: a production build serves fonts from the bucket, so the
-  # output is the same whether or not site/assets/fonts is on disk. Fetching
-  # them would only add a release download the deploy can fail on. `serve:dev`
-  # keeps the dependency, because it serves them from disk.
+  # No font download: production pages load fonts from the bucket.
   build:
     desc: "build the website and save it (BASE_URL=... overrides the configured baseURL)"
     deps: [clean]
@@ -301,10 +239,6 @@ tasks:
       - task: build:remove-unused-theme-elements
       - task: check:output
 
-  # Everything the deploy depends on that a build cannot notice on its own: a
-  # wrong base URL still builds, and a publish directory that no longer matches
-  # OUTPUT_PATH only fails on Netlify, after the push. `deploy.sh` runs this
-  # before it builds, so a deploy fails on the drift rather than on its effect.
   check:deploy:
     desc: "check the deploy wiring: base URL per Netlify context, publish directory"
     cmds:
@@ -314,34 +248,22 @@ tasks:
           [ "$2" = "$3" ] || fail="$(printf '%s\n    %s: want [%s], got [%s]' "$fail" "$1" "$2" "$3")"
         }
 
-        # deploy.sh maps the Netlify context to the address that serves the deploy.
         check "production build" "https://site.test" \
           "$(CONTEXT=production URL=https://site.test DEPLOY_PRIME_URL=https://preview.test {{.PROJECT_ROOT}}/deploy.sh --base-url)"
         check "preview build" "https://preview.test" \
           "$(CONTEXT=deploy-preview URL=https://site.test DEPLOY_PRIME_URL=https://preview.test {{.PROJECT_ROOT}}/deploy.sh --base-url)"
-        # Cleared rather than inherited: on Netlify these are always set, and
-        # this case is the build that runs where they are not.
         check "build outside Netlify" "" \
           "$(CONTEXT= URL= DEPLOY_PRIME_URL= {{.PROJECT_ROOT}}/deploy.sh --base-url)"
 
-        # deploy.sh hands that address to the build. Nothing downstream can tell
-        # the difference if it stops, because a build without one still succeeds.
         grep -q 'task build BASE_URL=' {{.PROJECT_ROOT}}/deploy.sh \
           || fail="$(printf '%s\n    deploy.sh: passes no BASE_URL to the build' "$fail")"
 
-        # Nothing downstream notices this one stopping either: the deploy still
-        # succeeds, and ships pages whose images no one has asked the bucket for.
         grep -q 'task check:assets' {{.PROJECT_ROOT}}/deploy.sh \
           || fail="$(printf '%s\n    deploy.sh: runs no check:assets after the build' "$fail")"
 
-        # Nor this one: the experiments' unit tests run nowhere else, so a
-        # deploy that skips them ships whatever they would have caught.
         grep -q 'task test:experiments' {{.PROJECT_ROOT}}/deploy.sh \
           || fail="$(printf '%s\n    deploy.sh: runs no test:experiments before the build' "$fail")"
 
-        # That gate must also be able to fail. A checkout with nothing to run
-        # is the way it passes having run nothing, so both of its guards are
-        # asked here against a tree that holds what each one looks for.
         probe="$(mktemp -d)"
         mkdir -p "$probe/experiments/one"
         if task test:experiments ASSETS_LOCAL_PATH="$probe" >/dev/null 2>&1; then
@@ -353,9 +275,6 @@ tasks:
         fi
         rm -rf "$probe"
 
-        # The address must reach the pages, not merely the hugo command line, so
-        # assert on built output: with a BASE_URL the pages carry it, without one
-        # they carry the configured baseURL instead.
         task build BASE_URL=https://preview.test >/dev/null 2>&1
         grep -q "https://preview.test/" {{.OUTPUT_PATH}}/index.html \
           || fail="$(printf '%s\n    build BASE_URL=...: the pages do not carry that address' "$fail")"
@@ -364,20 +283,12 @@ tasks:
           fail="$(printf '%s\n    build: the pages carry a BASE_URL that was not given' "$fail")"
         fi
 
-        # Fonts come from the bucket in a production build, which is why `build`
-        # fetches none. If that stopped being true the pages would ask for files
-        # the build never downloaded.
         grep -rqE 'https://[^"]*/fonts/[^"]*\.woff2' {{.OUTPUT_PATH}} \
           || fail="$(printf '%s\n    build: the pages do not resolve fonts to the bucket' "$fail")"
 
-        # The avatar is the one image the homepage carries, and it reaches the
-        # reader the same way. A site-relative src would ask Netlify for a file
-        # the build never published, and nothing else would notice.
         grep -qE '<img src="https?://[^"]+" alt="avatar"' {{.OUTPUT_PATH}}/index.html \
           || fail="$(printf '%s\n    build: the homepage avatar does not resolve to the bucket' "$fail")"
 
-        # Netlify publishes the directory the build writes to. A trailing comment
-        # is allowed; a value in single quotes is not.
         publish="$(sed -n 's/^[[:space:]]*publish[[:space:]]*=[[:space:]]*"\([^"]*\)".*/\1/p' {{.PROJECT_ROOT}}/netlify.toml)"
         check "netlify.toml publish" "$(basename {{.OUTPUT_PATH}})" "$publish"
 
@@ -387,17 +298,10 @@ tasks:
         fi
         echo "==> check:deploy: base URL per context and publish directory agree"
 
-  # Netlify keys every uploaded file by its path, and a path holding a `#` fails
-  # the deploy with no message naming the file — the build succeeds, the publish
-  # step reports only "error". Hugo will build such a path from a taxonomy term
-  # that contains one ("C#" becomes tags/c#/), so name the offender here, where
-  # the message can say what to do about it.
   check:output:
     desc: "check that every built path can be published"
     cmds:
       - |-
-        # An absent or empty tree would otherwise pass: find writes to stderr and
-        # reports nothing, which reads the same as "no bad paths".
         if [ ! -d {{.OUTPUT_PATH}} ] || [ -z "$(find {{.OUTPUT_PATH}} -type f)" ]; then
           echo "==> check:output: nothing built at {{.OUTPUT_PATH}}" >&2
           exit 1
@@ -412,13 +316,6 @@ tasks:
         fi
         echo "==> check:output: every built path can be published"
 
-  # The published pages fetch their images and webfonts from the bucket, not
-  # from Netlify, so a deploy can succeed with every one of them 404ing: Hugo
-  # writes those URLs without ever fetching them, and Netlify never sees the
-  # files at all. Ask the network instead, for each address the build wrote.
-  # Only those: this runs in the deploy, so it answers about the pages the
-  # deploy publishes and nothing else. The probe is `check:probe`, which the
-  # up-sync runs, where a failure is something the operator can act on.
   check:assets:
     desc: "check that the bucket serves the remote assets the built pages reference"
     cmds:
@@ -434,8 +331,6 @@ tasks:
           exit 1
         fi
 
-        # A build that resolves nothing to the bucket would otherwise pass this
-        # check by referencing nothing, which is the failure it exists to catch.
         urls="$(grep -rhoE "https?://[^\"'()<>[:space:]]+" {{.OUTPUT_PATH}} | grep -F "$base/" | sort -u)"
         if [ -z "$urls" ]; then
           echo "==> check:assets: the built pages resolve no asset to $base" >&2
@@ -458,12 +353,6 @@ tasks:
         fi
         echo "==> check:assets: the bucket serves all $(echo "$urls" | wc -l | tr -d ' ') referenced assets"
 
-  # Whether a reader can have what the last up-sync pushed. No page references
-  # the probe, so the bucket holds it only because a sync put it there — which
-  # is what makes this an answer about the sync rather than about the assets one
-  # build happens to reference. Compare the bytes: an object an earlier sync
-  # left answers 200 forever, and would report a sync that now uploads nothing
-  # as healthy.
   check:probe:
     desc: "check that the bucket serves the probe this machine would upload"
     deps: ["assets:probe"]
@@ -489,27 +378,15 @@ tasks:
         fi
         echo "==> check:probe: the bucket serves this machine's probe"
 
-  # An experiment's pure modules can carry node:test files in a tests/ directory
-  # beside them. Nothing in the Hugo build runs JavaScript, so this is the only
-  # place they run.
   test:experiments:
     desc: "run every *.test.js an experiment carries, wherever it keeps them (needs node)"
     cmds:
       - |-
-        # Every experiment declares itself with a manifest. None in sight means
-        # the submodule is not checked out, or the path has drifted, and the
-        # deploy's one unit-test gate would otherwise pass having run nothing.
         if [ -z "$(find {{.ASSETS_LOCAL_PATH}}/experiments -name manifest.yaml -print -quit 2>/dev/null)" ]; then
           printf '==> test:experiments: no experiment under %s/experiments\n' '{{.ASSETS_LOCAL_PATH}}' >&2
           exit 1
         fi
-        # find, not a glob: the shell does not walk **, an experiment may keep
-        # its tests at any depth, and node is handed the files themselves, so a
-        # pattern that matches nothing cannot pass for a run.
         tests=$(find {{.ASSETS_LOCAL_PATH}}/experiments -name '*.test.js' | sort)
-        # An experiment that declares itself carries tests. None in sight is
-        # the same hole the manifest guard closes: the gate would pass having
-        # run nothing, because the tests moved or the checkout is partial.
         if [ -z "$tests" ]; then
           printf '==> test:experiments: no *.test.js under %s/experiments\n' '{{.ASSETS_LOCAL_PATH}}' >&2
           exit 1
@@ -520,11 +397,6 @@ tasks:
     desc: "remove theme-provided assets this site doesn't use from the build output"
     cmds:
       - |-
-        # The hugo-coder theme ships Font Awesome web fonts in its static/
-        # directory, so Hugo copies them into the build output even though this
-        # site imports no Font Awesome stylesheet and renders no FA icons (we
-        # use inline Lucide SVGs instead). Strip the unused fonts so they are
-        # never published.
         echo "==> build:remove-unused-theme-elements: removing unused Font Awesome fonts from {{.OUTPUT_PATH}}/fonts"
         fa_fonts=$(find {{.OUTPUT_PATH}}/fonts -maxdepth 1 -name 'fa-*' 2>/dev/null | sort)
         if [ -z "$fa_fonts" ]; then
