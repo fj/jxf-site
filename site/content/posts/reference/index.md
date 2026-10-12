@@ -356,7 +356,7 @@ This third paragraph continues past the bottom edge of the figure so you can see
 
 ## Inline mathematics
 
-Inline math is delimited by single dollar signs. For example, the quadratic formula says that if $ax^2 + bx + c = 0$, then $x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}$. Euler's identity $e^{i\pi} + 1 = 0$ relates five fundamental constants. The Pythagorean theorem states that $a^2 + b^2 = c^2$ for a right triangle with legs $a$ and $b$ and hypotenuse $c$.
+Inline math is delimited by `${` and `}$`, so a lone dollar sign stays a dollar sign. For example, the quadratic formula says that if ${ax^2 + bx + c = 0}$, then ${x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}}$. Euler's identity ${e^{i\pi} + 1 = 0}$ relates five fundamental constants. The Pythagorean theorem states that ${a^2 + b^2 = c^2}$ for a right triangle with legs ${a}$ and ${b}$ and hypotenuse ${c}$.
 
 ## Display mathematics
 
@@ -376,7 +376,7 @@ $$n! \approx \sqrt{2\pi n} \left(\frac{n}{e}\right)^n$$
 
 ## Equations and alignment
 
-Aligned equations show multiple steps of a derivation. Here is the derivation of the variance of a random variable $X$:
+Aligned equations show multiple steps of a derivation. Here is the derivation of the variance of a random variable ${X}$:
 
 $$\begin{aligned}
 \text{Var}(X) &= E\left[(X - \mu)^2\right] \\
@@ -436,7 +436,7 @@ The fundamental theorem of calculus:
 
 $$\frac{d}{dx} \int_a^x f(t) \, dt = f(x)$$
 
-Taylor series expansion of $e^x$ around $x = 0$:
+Taylor series expansion of ${e^x}$ around ${x = 0}$:
 
 $$e^x = \sum_{n=0}^{\infty} \frac{x^n}{n!} = 1 + x + \frac{x^2}{2!} + \frac{x^3}{3!} + \cdots$$
 
@@ -454,7 +454,7 @@ The probability density function of the normal distribution:
 
 $$f(x) = \frac{1}{\sigma\sqrt{2\pi}} \exp\left(-\frac{(x - \mu)^2}{2\sigma^2}\right)$$
 
-The Poisson distribution for $k$ events:
+The Poisson distribution for ${k}$ events:
 
 $$P(X = k) = \frac{\lambda^k e^{-\lambda}}{k!}$$
 
@@ -462,11 +462,11 @@ $$P(X = k) = \frac{\lambda^k e^{-\lambda}}{k!}$$
 
 Math notation uses many Greek letters and special symbols. Here are some common ones in context:
 
-- The angular frequency is $\omega = 2\pi f$.
-- The Dirac delta satisfies $\int_{-\infty}^{\infty} \delta(x) \, dx = 1$.
-- The gradient of a scalar field: $\nabla f = \left(\frac{\partial f}{\partial x}, \frac{\partial f}{\partial y}, \frac{\partial f}{\partial z}\right)$.
-- Set notation: $A \cup B$, $A \cap B$, $A \subseteq B$, $x \in \mathbb{R}$.
-- Logical notation: $p \land q$, $p \lor q$, $\neg p$, $p \implies q$, $\forall x \, \exists y$.
+- The angular frequency is ${\omega = 2\pi f}$.
+- The Dirac delta satisfies ${\int_{-\infty}^{\infty} \delta(x) \, dx = 1}$.
+- The gradient of a scalar field: ${\nabla f = \left(\frac{\partial f}{\partial x}, \frac{\partial f}{\partial y}, \frac{\partial f}{\partial z}\right)}$.
+- Set notation: ${A \cup B}$, ${A \cap B}$, ${A \subseteq B}$, ${x \in \mathbb{R}}$.
+- Logical notation: ${p \land q}$, ${p \lor q}$, ${\neg p}$, ${p \implies q}$, ${\forall x \, \exists y}$.
 
 ## Interactive sine wave
 
@@ -683,9 +683,9 @@ The sidenote system is built in three layers:
 
 ### A passage with several footnotes
 
-The wave equation $\frac{\partial^2 u}{\partial t^2} = c^2 \frac{\partial^2 u}{\partial x^2}$ describes how waves propagate through a medium.[^6] Its solutions include traveling waves of the form $u(x, t) = f(x - ct) + g(x + ct)$, where $f$ and $g$ are arbitrary functions determined by initial conditions.[^7]
+The wave equation ${\frac{\partial^2 u}{\partial t^2} = c^2 \frac{\partial^2 u}{\partial x^2}}$ describes how waves propagate through a medium.[^6] Its solutions include traveling waves of the form ${u(x, t) = f(x - ct) + g(x + ct)}$, where ${f}$ and ${g}$ are arbitrary functions determined by initial conditions.[^7]
 
-[^6]: Here $c$ is the wave speed, which depends on the physical properties of the medium (tension and density for a string, bulk modulus and density for a fluid).
+[^6]: Here ${c}$ is the wave speed, which depends on the physical properties of the medium (tension and density for a string, bulk modulus and density for a fluid).
 
 [^7]: This is d'Alembert's solution, published in 1747. Jean le Rond d'Alembert was a French mathematician and philosopher who also co-edited the *Encyclopedie*.
 
